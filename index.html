@@ -229,7 +229,12 @@ function generateNavonHTML(global_letter, local_letter){
     // =========================
     // MOBILE VERSION (BUTTONS)
     // =========================
-    if (DEVICE !== "desktop") {
+    if (DEVICE === "mobile" || DEVICE === "tablet") {
+
+      if (!letter_set) {
+  console.error("letter_set is undefined in block:", block_type);
+  letter_set = LETTER_SETS.letters; // fallback, lai nesabrūk
+}
 
   trials.push({
     type: "html-button-response",
@@ -265,30 +270,36 @@ function generateNavonHTML(global_letter, local_letter){
 
     on_finish: function(data) {
 
-      const correctAnswer =
-        (data.task === "global")
-          ? data.global_letter
-          : data.local_letter;
+  try {
 
-      let resp = null;
+    const correctAnswer =
+      (data.task === "global")
+        ? data.global_letter
+        : data.local_letter;
 
-      if (typeof data.response === "number") {
-        resp = letter_set[data.response];
-      } else if (typeof data.response === "string") {
-        resp = data.response;
-      }
+    let resp = null;
 
-      if (!resp) {
-        data.correct = 0;
-        data.response = "";
-        return;
-      }
-
-      data.response = resp;
-      data.correct = (resp === correctAnswer) ? 1 : 0;
+    if (typeof data.response === "number") {
+      resp = letter_set?.[data.response];
+    } 
+    else if (typeof data.response === "string") {
+      resp = data.response;
     }
-  });
 
+    if (!resp || !correctAnswer) {
+      data.correct = 0;
+      data.response = "";
+      return;
+    }
+
+    data.response = resp;
+    data.correct = (resp === correctAnswer) ? 1 : 0;
+
+  } catch (e) {
+    console.error("ERROR on_finish:", e);
+    data.correct = 0;
+    data.response = "";
+  }
 }
 
       
