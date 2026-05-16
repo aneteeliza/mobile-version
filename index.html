@@ -321,7 +321,12 @@ timeline.push({
 timeline.push(...createPracticeBlock("mixed", 6));
 
 function getPracticeAccuracy(block){
-  const d = jsPsych.data.get().filter({practice: true, block: block});
+  const d = jsPsych.data.get().filterCustom(function(trial) {
+    return trial.practice === true && 
+           trial.block === block && 
+           trial.correct !== undefined;
+  });
+  
   return d.count() === 0 ? 0 : d.select("correct").mean();
 }
 
