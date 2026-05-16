@@ -264,9 +264,7 @@ if (DEVICE === "mobile" || DEVICE === "tablet") {
     },
 
     on_finish: function(data) {
-
       try {
-
         const correctAnswer =
           data.task === "global"
             ? data.global_letter
@@ -301,11 +299,17 @@ if (DEVICE === "mobile" || DEVICE === "tablet") {
 
 } else {
 
+  // =========================
+  // DESKTOP VERSION (KEYBOARD)
+  // =========================
+
   trials.push({
     type: "html-keyboard-response",
+
     stimulus: generateNavonHTML(global_letter, local_letter),
 
     choices: letter_set.map(l => l.toLowerCase()),
+
     trial_duration: 1500,
     response_ends_trial: true,
 
@@ -316,54 +320,25 @@ if (DEVICE === "mobile" || DEVICE === "tablet") {
       task,
       global_letter,
       local_letter
+    },
+
+    on_finish: function(data) {
+
+      const correctAnswer =
+        data.task === "global"
+          ? data.global_letter.toLowerCase()
+          : data.local_letter.toLowerCase();
+
+      if (!data.response) {
+        data.correct = 0;
+        data.response = "";
+      } else {
+        data.correct =
+          (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
+      }
     }
   });
 
-}
-      
-    // =========================
-    // DESKTOP VERSION (KEYBOARD)
-    // =========================
-
-      trials.push({
-        type: "html-keyboard-response",
-
-        stimulus: generateNavonHTML(global_letter, local_letter),
-
-        choices: letter_set.map(l => l.toLowerCase()),
-
-        trial_duration: 1500,
-        response_ends_trial: true,
-
-        data: {
-          block: block_type,
-          trial: i+1,
-          condition,
-          task,
-          global_letter,
-          local_letter
-        },
-
-        on_finish: function(data){
-
-          const correctAnswer =
-            (data.task === "global")
-              ? data.global_letter.toLowerCase()
-              : data.local_letter.toLowerCase();
-
-          if (!data.response) {
-            data.correct = 0;
-            data.response = "";
-          } else {
-            data.correct =
-              (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
-          }
-        }
-      });
-    }
-  }
-
-  return trials;
 }
 
 function saveData() {
