@@ -569,17 +569,37 @@ timeline.push(
 timeline.push({
   type: "survey-html-form",
   html: `
-    <div class="card">
-      <p>Tavs vecums:</p>
-      <input name="age" type="number" min="1" max="99" required />
-    </div>
+    <form id="age-form">
+      <div class="card">
+        <p>Tavs vecums:</p>
+        <input 
+          name="age" 
+          type="number" 
+          min="1" 
+          max="99" 
+          inputmode="numeric" 
+          pattern="[0-9]*" 
+          placeholder="piem. 25" 
+          style="font-size: 20px !important; padding: 12px; text-align: center;" 
+          required 
+        />
+      </div>
+    </form>
   `,
   button_label: "Turpināt",
   on_finish: function(data){
-    const res = JSON.parse(data.responses);
-    const age = parseInt(res.age);
-    if (!isNaN(age)) {
-      jsPsych.data.addProperties({ age: age });
+    if (data && data.responses) {
+      try {
+        const res = JSON.parse(data.responses);
+        if (res && res.age) {
+          const age = parseInt(res.age, 10);
+          if (!isNaN(age)) {
+            jsPsych.data.addProperties({ age: age });
+          }
+        }
+      } catch (e) {
+        console.error("Error parsing age response:", e);
+      }
     }
   }
 });
