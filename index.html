@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Navon Task - CLEAN</title>
+<title>Navon Task - jsPsych</title>
 
 <link href="https://unpkg.com/jspsych@6.3.1/css/jspsych.css" rel="stylesheet">
 
@@ -10,23 +10,49 @@
 body {
   background:black;
   color:white;
-  font-family:monospace;
+  font-family: monospace;
   text-align:center;
   margin:0;
+  padding:0;
+}
+
+/* =========================
+   MOBILE / DESKTOP FIX
+========================= */
+
+.mobile .card {
+  font-size: 18px;
+  padding: 15px;
+}
+
+.mobile .navon-letter {
+  font-size: 20px !important;
+  width: 20px;
+  height: 20px;
+}
+
+.desktop .navon-letter {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
 }
 
 .navon-letter {
-  font-size:28px;
   display:inline-block;
-  width:28px;
-  height:28px;
+  text-align:center;
   opacity:0;
-  animation:fadein 0.2s forwards;
+  animation: fadein 0.2s forwards;
 }
 
 @keyframes fadein {
   from {opacity:0; transform:scale(0.5);}
   to {opacity:1; transform:scale(1);}
+}
+
+.card {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
 }
 </style>
 </head>
@@ -36,169 +62,200 @@ body {
 <script src="https://unpkg.com/jspsych@6.3.1/jspsych.js"></script>
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-button-response.js"></script>
+<script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-survey-html-form.js"></script>
 
 <script>
+// ================= DEVICE =================
+function getDeviceType(){
+  const ua = navigator.userAgent;
+  if(/mobile/i.test(ua)) return "mobile";
+  if(/tablet/i.test(ua)) return "mobile";
+  return "desktop";
+}
 
-// ===================== BASIC =====================
+const DEVICE = getDeviceType();
+document.body.classList.add(DEVICE);
+
+// ================= IDS =================
+const PARTICIPANT_ID = "NAVON-" + Math.random().toString(36).substring(2,8).toUpperCase();
+const TIMESTAMP = new Date().toISOString();
+
+jsPsych.data.addProperties({
+  participant_id: PARTICIPANT_ID,
+  timestamp: TIMESTAMP,
+  device: DEVICE
+});
+
+// ================= SETTINGS =================
+const GRID_SIZE = 9;
 const LETTER_SETS = {
   letters: ["H","S"],
   numbers: ["2","3"]
 };
 
-const GRID_SIZE = 9;
-
+// ================= TEMPLATES =================
 const TEMPLATES = {
-  H: [
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1]
-  ],
-  S: [
-    [0,1,1,1,1,1,1,1,0],
-    [1,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,0],
-    [0,1,0,0,0,0,0,0,0],
-    [0,0,1,1,1,1,1,0,0],
-    [0,0,0,0,0,0,0,1,0],
-    [0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [0,1,1,1,1,1,1,1,0]
-  ],
-  "2": [
-    [0,1,1,1,1,1,1,1,0],
-    [1,0,0,0,0,0,0,0,1],
-    [0,0,0,0,0,0,0,1,0],
-    [0,0,0,0,0,1,0,0,0],
-    [0,0,0,0,1,0,0,0,0],
-    [0,0,0,1,0,0,0,0,0],
-    [0,0,1,0,0,0,0,0,0],
-    [1,0,0,0,0,0,0,0,0],
-    [1,1,1,1,1,1,1,1,1]
-  ],
-  "3": [
-    [0,1,1,1,1,1,1,1,0],
-    [1,0,0,0,0,0,0,0,1],
-    [0,0,0,0,0,0,0,0,1],
-    [0,0,0,0,0,0,0,0,1],
-    [0,0,0,1,1,1,1,1,0],
-    [0,0,0,0,0,0,0,0,1],
-    [0,0,0,0,0,0,0,0,1],
-    [1,0,0,0,0,0,0,0,1],
-    [0,1,1,1,1,1,1,1,0]
-  ]
+"H":[
+[1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1],
+[1,1,1,1,1,1,1,1,1],
+[1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1]
+],
+"S":[
+[0,1,1,1,1,1,1,1,0],
+[1,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,0],
+[0,1,0,0,0,0,0,0,0],
+[0,0,1,1,1,1,1,0,0],
+[0,0,0,0,0,0,0,1,0],
+[0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1],
+[0,1,1,1,1,1,1,1,0]
+],
+"2":[
+[0,1,1,1,1,1,1,1,0],
+[1,0,0,0,0,0,0,0,1],
+[0,0,0,0,0,0,0,1,0],
+[0,0,0,0,0,1,0,0,0],
+[0,0,0,0,1,0,0,0,0],
+[0,0,0,1,0,0,0,0,0],
+[0,0,1,0,0,0,0,0,0],
+[1,0,0,0,0,0,0,0,0],
+[1,1,1,1,1,1,1,1,1]
+],
+"3":[
+[0,1,1,1,1,1,1,1,0],
+[1,0,0,0,0,0,0,0,1],
+[0,0,0,0,0,0,0,0,1],
+[0,0,0,0,0,0,0,0,1],
+[0,0,0,1,1,1,1,1,0],
+[0,0,0,0,0,0,0,0,1],
+[0,0,0,0,0,0,0,0,1],
+[1,0,0,0,0,0,0,0,1],
+[0,1,1,1,1,1,1,1,0]
+]
 };
 
-// ===================== NAVON STIMULUS =====================
-function generateNavon(globalL, localL){
+// ================= NAVON =================
+function generateNavonHTML(global_letter, local_letter){
+  const t = TEMPLATES[global_letter];
   let html = "<div>";
 
-  const t = TEMPLATES[globalL];
-
-  for (let r=0;r<GRID_SIZE;r++){
+  for(let r=0;r<GRID_SIZE;r++){
     html += "<div>";
-    for (let c=0;c<GRID_SIZE;c++){
+    for(let c=0;c<GRID_SIZE;c++){
       html += t[r][c]
-        ? `<span class="navon-letter">${localL}</span>`
+        ? `<span class="navon-letter">${local_letter}</span>`
         : `<span class="navon-letter">&nbsp;</span>`;
     }
     html += "</div>";
   }
 
-  return html + "</div>";
+  html += "</div>";
+  return html;
 }
 
-// ===================== TRIAL =====================
-function createTrial(globalL, localL, task, setType, block){
+// ================= TRIALS =================
+function createTrials(block, n, fixedTask=null, set){
 
-  const correctKey =
-    setType === "letters"
-      ? (task === "global" ? globalL.toLowerCase() : localL.toLowerCase())
-      : (task === "global" ? globalL : localL);
+  const trials=[];
 
-  return {
-    type: "html-keyboard-response",
-    stimulus: generateNavon(globalL, localL),
+  for(let i=0;i<n;i++){
 
-    choices: setType === "letters"
-      ? ["h","s"]
-      : ["2","3"],
+    const task = (block==="mixed")
+      ? (Math.random()<0.5?"global":"local")
+      : block;
 
-    data: {
-      block,
-      task,
-      global_letter: globalL,
-      local_letter: localL
-    },
+    const condition = Math.random()<0.5?"congruent":"incongruent";
 
-    on_finish: function(data){
-      data.correct = (data.response === correctKey) ? 1 : 0;
+    let g,l;
+    if(condition==="congruent"){
+      g=l=set[Math.floor(Math.random()*2)];
+    } else {
+      const s=[...set].sort(()=>Math.random()-0.5);
+      g=s[0]; l=s[1];
     }
-  };
-}
 
-// ===================== TRIAL BUILDER =====================
-function createTrials(block, n, setType){
+    trials.push({
+      type:"html-keyboard-response",
+      stimulus: generateNavonHTML(g,l),
+      choices: set.map(x=>x.toLowerCase()),
+      trial_duration:1500,
+      data:{block,task,global_letter:g,local_letter:l,condition},
 
-  const letters = setType === "letters"
-    ? LETTER_SETS.letters
-    : LETTER_SETS.numbers;
-
-  let trials = [];
-
-  for (let i=0;i<n;i++){
-
-    const globalL = letters[Math.floor(Math.random()*2)];
-    const localL  = letters[Math.floor(Math.random()*2)];
-    const task = Math.random() < 0.5 ? "global" : "local";
-
-    trials.push(createTrial(globalL, localL, task, setType, block));
+      on_finish:function(d){
+        const correct = (d.task==="global"?d.global_letter:d.local_letter).toLowerCase();
+        d.correct = d.response ? (d.response.toLowerCase()===correct?1:0) : 0;
+      }
+    });
   }
 
   return trials;
 }
 
-// ===================== TIMELINE =====================
-let timeline = [];
+// ================= TIMELINE =================
+let timeline=[];
 
-// INSTRUCTIONS
-function instruction(text){
-  return {
-    type: "html-keyboard-response",
-    stimulus: text,
-    choices: [" "]
-  };
-}
-
-timeline.push(instruction("<h2>Navon uzdevums</h2><p>Spied SPACE</p>"));
-timeline.push(instruction("<p>Fokusējies uz lielo vai mazo burtu</p>"));
-
-// GLOBAL letters
-timeline.push(instruction("<h3>Globālais bloks (H/S)</h3>"));
-timeline.push(...createTrials("global_letters", 10, "letters"));
-
-// LOCAL letters
-timeline.push(instruction("<h3>Lokālais bloks (H/S)</h3>"));
-timeline.push(...createTrials("local_letters", 10, "letters"));
-
-// GLOBAL numbers
-timeline.push(instruction("<h3>Globālais bloks (2/3)</h3>"));
-timeline.push(...createTrials("global_numbers", 10, "numbers"));
-
-// LOCAL numbers
-timeline.push(instruction("<h3>Lokālais bloks (2/3)</h3>"));
-timeline.push(...createTrials("local_numbers", 10, "numbers"));
-
-// ===================== START =====================
-jsPsych.init({
-  timeline: timeline
+timeline.push({
+  type:"html-keyboard-response",
+  stimulus:`<div class="card"><h2>Navon Task</h2><p>Press SPACE</p></div>`,
+  choices:[" "],
+  data:{ignore:true}
 });
 
+// GLOBAL H/S
+timeline.push({
+  type:"html-keyboard-response",
+  stimulus:`<div class="card"><h2>Global H/S</h2></div>`,
+  choices:[" "]
+});
+timeline.push(...createTrials("global",20,null,LETTER_SETS.letters));
+
+// LOCAL H/S
+timeline.push({
+  type:"html-keyboard-response",
+  stimulus:`<div class="card"><h2>Local H/S</h2></div>`,
+  choices:[" "]
+});
+timeline.push(...createTrials("local",20,null,LETTER_SETS.letters));
+
+// GLOBAL 2/3
+timeline.push({
+  type:"html-keyboard-response",
+  stimulus:`<div class="card"><h2>Global 2/3</h2></div>`,
+  choices:[" "]
+});
+timeline.push(...createTrials("global",20,null,LETTER_SETS.numbers));
+
+// LOCAL 2/3
+timeline.push({
+  type:"html-keyboard-response",
+  stimulus:`<div class="card"><h2>Local 2/3</h2></div>`,
+  choices:[" "]
+});
+timeline.push(...createTrials("local",20,null,LETTER_SETS.numbers));
+
+// MIXED
+timeline.push({
+  type:"html-keyboard-response",
+  stimulus:`<div class="card"><h2>Mixed</h2></div>`,
+  choices:[" "]
+});
+timeline.push(...createTrials("mixed",40,null,LETTER_SETS.letters));
+
+// ================= END =================
+timeline.push({
+  type:"html-keyboard-response",
+  stimulus:`<div class="card"><h2>Done</h2></div>`,
+  choices: jsPsych.NO_KEYS
+});
+
+jsPsych.init({timeline});
 </script>
 
 </body>
