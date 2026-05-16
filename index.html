@@ -154,16 +154,16 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
     }
 
     if(block_type === "mixed"){
-      const cue = task === "global" ? "↑" : "↓";
-      trials.push({
-        type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
-        stimulus: `<div style="font-size:80px; color:yellow;">${cue}</div>`,
-        choices: IS_MOBILE ? [] : jsPsych.NO_KEYS,
-        button_html: IS_MOBILE ? '' : undefined,
-        trial_duration: 700,
-        data: {ignore: true}
-      });
-    }
+  const cue = task === "global" ? "↑" : "↓";
+
+  trials.push({
+    type: "html-keyboard-response",
+    stimulus: `<div style="font-size:80px; color:yellow;">${cue}</div>`,
+    choices: jsPsych.NO_KEYS,
+    trial_duration: 700,
+    data: { ignore: true }
+  });
+}
 
     const correctAnswer = (task === "global") ? global_letter.toLowerCase() : local_letter.toLowerCase();
 
@@ -172,6 +172,9 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
       stimulus: generateNavonHTML(global_letter, local_letter),
       // Fix 1: Enforce clean index matching arrays [0, 1] on mobile to block internal engine loops
       choices: formattedChoices,
+button_html: IS_MOBILE
+  ? '<button class="jspsych-btn">%choice%</button>'
+  : undefined,
       trial_duration: 1800,
       data: {
         block: block_type,
@@ -183,18 +186,29 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         local_letter: local_letter,
         target_char: correctAnswer
       },
+
+
       on_finish: function(data){
+
   const correctAnswer = data.target_char;
 
   let chosenLetter = "";
 
   if (IS_MOBILE) {
-    // jsPsych already stores the clicked label in response (IMPORTANT)
-    chosenLetter = (data.response || "").toLowerCase();
+
+    // MOBILE: button_pressed stores index
+    if(data.button_pressed !== null && data.button_pressed !== undefined){
+      chosenLetter = formattedChoices[data.button_pressed];
+    }
+
   } else {
-    chosenLetter = (data.response || "").toLowerCase();
+
+    // DESKTOP: response stores key press
+    chosenLetter = String(data.response || "").toLowerCase();
+
   }
 
+  data.response = chosenLetter;
   data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
 
   console.log({
@@ -203,6 +217,7 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
     correct: data.correct
   });
 }
+      
     });
   }
 
