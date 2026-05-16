@@ -191,7 +191,7 @@ function generateNavonHTML(global_letter, local_letter){
   return html;
 }
 
-function createTrials(block_type, n_trials, fixed_task=null, letter_set){
+  function createTrials(block_type, n_trials, fixed_task=null, letter_set){
 
   const trials = [];
 
@@ -204,66 +204,125 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
       task = fixed_task ?? block_type;
     }
 
-    let condition = Math.random()<0.5 ? "congruent" : "incongruent";
+    let condition = Math.random() < 0.5 ? "congruent" : "incongruent";
+
     let global_letter, local_letter;
 
-    if(condition==="congruent"){
+    if(condition === "congruent"){
       global_letter = local_letter = letter_set[Math.floor(Math.random()*2)];
     } else {
-      const shuffled = [...letter_set].sort(()=>Math.random()-0.5);
+      const shuffled = [...letter_set].sort(() => Math.random() - 0.5);
       global_letter = shuffled[0];
-      local_letter  = shuffled[1];
+      local_letter = shuffled[1];
     }
 
-    if(block_type==="mixed"){
-      const cue = task==="global" ? "↑" : "↓";
+    // cue
+    if(block_type === "mixed"){
       trials.push({
         type: "html-keyboard-response",
-        stimulus: `<div style="font-size:80px; color:yellow;">${cue}</div>`,
+        stimulus: `<div style="font-size:70px;color:yellow;">${task==="global"?"↑":"↓"}</div>`,
         choices: jsPsych.NO_KEYS,
         trial_duration: 700,
         data: {ignore:true}
       });
     }
 
-    trials.push({
-  type: "html-keyboard-response",
-  stimulus: generateNavonHTML(global_letter, local_letter),
-  choices: letter_set.map(l => l.toLowerCase()),
-  trial_duration: 1500,
-  response_ends_trial: true,
+    // =========================
+    // MOBILE VERSION (BUTTONS)
+    // =========================
+    if (DEVICE !== "desktop") {
 
-  on_load: function() {
-    showMobileButtons(letter_set.map(l => l.toLowerCase()));
-  },
+      trials.push({
+        type: "html-button-response",
 
-  data: {
-    block: block_type,
-    trial: i+1,
-    condition: condition,
-    task: task,
-    global_letter: global_letter,
-    local_letter: local_letter
-  },
+        stimulus: `
+          <div style="font-size:32px; margin-bottom:20px;">
+            ${generateNavonHTML(global_letter, local_letter)}
+          </div>
+        `,
 
-  on_finish: function(data){
+        choices: letter_set.map(l => l.toUpperCase()),
 
-    removeMobileButtons();
+        button_html: `
+          <button class="jspsych-btn" style="
+            font-size:28px;
+            width:120px;
+            height:80px;
+            margin:10px;
+          ">%choice%</button>
+        `,
 
-    const correctAnswer =
-      (data.task === "global")
-        ? data.global_letter?.toLowerCase()
-        : data.local_letter?.toLowerCase();
+        trial_duration: 1500,
+        response_ends_trial: true,
 
-    if (!data.response) {
-      data.correct = 0;
-      data.response = "";
-    } else {
-      data.correct =
-        (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
+        data: {
+          block: block_type,
+          trial: i+1,
+          condition,
+          task,
+          global_letter,
+          local_letter
+        },
+
+        on_finish: function(data){
+
+          const correctAnswer =
+            (data.task === "global")
+              ? data.global_letter
+              : data.local_letter;
+
+          if (data.response === null || data.response === undefined) {
+            data.correct = 0;
+            data.response = "";
+          } else {
+            data.response = letter_set[data.response];
+            data.correct = (data.response === correctAnswer) ? 1 : 0;
+          }
+        }
+      });
+
+    } 
+    // =========================
+    // DESKTOP VERSION (KEYBOARD)
+    // =========================
+    else {
+
+      trials.push({
+        type: "html-keyboard-response",
+
+        stimulus: generateNavonHTML(global_letter, local_letter),
+
+        choices: letter_set.map(l => l.toLowerCase()),
+
+        trial_duration: 1500,
+        response_ends_trial: true,
+
+        data: {
+          block: block_type,
+          trial: i+1,
+          condition,
+          task,
+          global_letter,
+          local_letter
+        },
+
+        on_finish: function(data){
+
+          const correctAnswer =
+            (data.task === "global")
+              ? data.global_letter.toLowerCase()
+              : data.local_letter.toLowerCase();
+
+          if (!data.response) {
+            data.correct = 0;
+            data.response = "";
+          } else {
+            data.correct =
+              (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
+          }
+        }
+      });
     }
-  }
-});
   }
 
   return trials;
