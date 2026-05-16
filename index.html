@@ -55,7 +55,6 @@
       from { opacity: 0; transform: scale(0.5); }
       to { opacity: 1; transform: scale(1); }
     }
-    /* Mobile-friendly touch choices */
     .mobile-btn-container {
       margin-top: 25px;
       display: flex;
@@ -77,7 +76,7 @@
       background-color: #555 !important;
     }
     input, select {
-      font-size: 16px !important; /* Prevents iOS auto-zoom */
+      font-size: 16px !important;
       padding: 8px;
       margin: 10px 0;
       width: 80%;
@@ -184,7 +183,6 @@ function generateNavonHTML(global_letter, local_letter){
 }
 
 function instructionScreen(htmlText){
-  // Dynamically change instructions tip context based on system agent
   let fixedText = IS_MOBILE 
     ? htmlText.replace("Nospied SPACE, lai turpinātu", "Nospied pogu zemāk, lai turpinātu").replace("Nospied SPACE, lai sāktu", "Nospied pogu zemāk, lai sāktu")
     : htmlText;
@@ -256,9 +254,10 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
               data.response = null; 
               data.correct = 0; 
             } else {
-              // Convert index (0 or 1) back to the choice value string
-              data.response = letter_set[data.response];
-              data.correct = (data.response === correct) ? 1 : 0;
+              // SAFE HARDCODING: Convert index (0 or 1) directly back to string using literal check
+              let selectedVal = letter_set[data.response];
+              data.response = selectedVal;
+              data.correct = (selectedVal === correct) ? 1 : 0;
             }
           }
         }
@@ -369,7 +368,6 @@ function createPracticeBlock(blockName, nTrials, letterSet){
       if (!data.response) {
         data.correct = 0;
       } else {
-        // String comparison logic matching adjusted runtime data.response
         data.correct = (data.response.toUpperCase() === correctAnswer.toUpperCase()) ? 1 : 0;
       }
     }
