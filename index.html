@@ -30,7 +30,6 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    /* Mobile Responsive Adjustments for buttons */
     .jspsych-btn {
       background-color: #333 !important;
       color: white !important;
@@ -99,7 +98,7 @@ const TEMPLATES = {
     [1,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,1]
   ],
   "S":[
-    [0,1,1,1,1,1,1,1,0], [1,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,0], [1,0,0,0,0,0,0,0,1], [0,1,0,0,0,0,0,0,0],
     [0,1,0,0,0,0,0,0,0], [0,0,1,1,1,1,1,0,0], [0,0,0,0,0,0,0,1,0],
     [0,0,0,0,0,0,0,0,1], [1,0,0,0,0,0,0,0,1], [0,1,1,1,1,1,1,1,0]
   ],
@@ -154,27 +153,23 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
     }
 
     if(block_type === "mixed"){
-  const cue = task === "global" ? "↑" : "↓";
-
-  trials.push({
-    type: "html-keyboard-response",
-    stimulus: `<div style="font-size:80px; color:yellow;">${cue}</div>`,
-    choices: jsPsych.NO_KEYS,
-    trial_duration: 700,
-    data: { ignore: true }
-  });
-}
+      const cue = task === "global" ? "↑" : "↓";
+      trials.push({
+        type: "html-keyboard-response",
+        stimulus: `<div style="font-size:80px; color:yellow;">${cue}</div>`,
+        choices: jsPsych.NO_KEYS,
+        trial_duration: 700,
+        data: { ignore: true }
+      });
+    }
 
     const correctAnswer = (task === "global") ? global_letter.toLowerCase() : local_letter.toLowerCase();
 
     trials.push({
       type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
       stimulus: generateNavonHTML(global_letter, local_letter),
-      // Fix 1: Enforce clean index matching arrays [0, 1] on mobile to block internal engine loops
       choices: formattedChoices,
-button_html: IS_MOBILE
-  ? '<button class="jspsych-btn">%choice%</button>'
-  : undefined,
+      button_html: IS_MOBILE ? '<button class="jspsych-btn">%choice%</button>' : undefined,
       trial_duration: 1800,
       data: {
         block: block_type,
@@ -186,38 +181,22 @@ button_html: IS_MOBILE
         local_letter: local_letter,
         target_char: correctAnswer
       },
-
-
       on_finish: function(data){
+        const correctAnswer = data.target_char;
+        let chosenLetter = "";
 
-  const correctAnswer = data.target_char;
+        if (IS_MOBILE) {
+          if (data.button_pressed !== null && data.button_pressed !== undefined) {
+            chosenLetter = formattedChoices[parseInt(data.button_pressed)];
+          }
+        } else {
+          chosenLetter = String(data.response || "").toLowerCase();
+        }
 
-  let chosenLetter = "";
-
-  if (IS_MOBILE) {
-
-    // MOBILE: button_pressed stores index
-    if(data.button_pressed !== null && data.button_pressed !== undefined){
-      chosenLetter = formattedChoices[data.button_pressed];
-    }
-
-  } else {
-
-    // DESKTOP: response stores key press
-    chosenLetter = String(data.response || "").toLowerCase();
-
-  }
-
-  data.response = chosenLetter;
-  data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
-
-  console.log({
-    response: chosenLetter,
-    expected: correctAnswer,
-    correct: data.correct
-  });
-}
-      
+        data.response = chosenLetter;
+        // Direct assignment ensures accurate values are written to data arrays
+        data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
+      }
     });
   }
 
@@ -248,10 +227,6 @@ function saveData() {
 }
 
 let timeline = [];
-
-function hintText(desktopHint, mobileHint) {
-  return IS_MOBILE ? mobileHint : desktopHint;
-}
 
 // Welcomes & Explanations
 timeline.push({
@@ -288,14 +263,14 @@ timeline.push({
 function createPracticeBlock(blockName, nTrials){
   const trials = createTrials(blockName, nTrials, blockName, LETTER_SETS.letters);
   for(let i = 0; i < trials.length; i++) {
-    if(trials[i].data) {
+    if(trials[i].data && !trials[i].data.ignore) {
       trials[i].data.practice = true;
     }
   }
   return trials;
 }
 
-// Practice block splits
+// Practice blocks
 timeline.push({
   type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
   stimulus: `<h3>Treniņš: Globālais bloks</h3><p>Fokusējies uz LIELAJIEM burtiem.</p>${IS_MOBILE ? '' : '<p>SPACE, lai sāktu</p>'}`,
@@ -320,29 +295,40 @@ timeline.push({
 });
 timeline.push(...createPracticeBlock("mixed", 6));
 
-function getPracticeAccuracy(block){
-  const d = jsPsych.data.get().filterCustom(function(trial) {
-    return trial.practice === true && 
-           trial.block === block && 
-           trial.correct !== undefined;
-  });
-  
-  return d.count() === 0 ? 0 : d.select("correct").mean();
+// FIX: Manually calculating performance percentages out of values array to prevent jsPsych filter loops
+function getAccuracyPercentage(blockName, isPracticeBlock) {
+  const allTrials = jsPsych.data.get().values();
+  let correctCount = 0;
+  let totalCount = 0;
+
+  for (let i = 0; i < allTrials.length; i++) {
+    const t = allTrials[i];
+    const matchPractice = isPracticeBlock ? (t.practice === true) : (!t.practice && !t.ignore);
+    
+    if (matchPractice && t.block === blockName && t.correct !== undefined) {
+      totalCount++;
+      if (parseInt(t.correct) === 1) {
+        correctCount++;
+      }
+    }
+  }
+  if (totalCount === 0) return "—";
+  return Math.round((correctCount / totalCount) * 100) + "%";
 }
 
 timeline.push({
   type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
   stimulus: function(){
-    const g = getPracticeAccuracy("global");
-    const l = getPracticeAccuracy("local");
-    const m = getPracticeAccuracy("mixed");
+    const g = getAccuracyPercentage("global", true);
+    const l = getAccuracyPercentage("local", true);
+    const m = getAccuracyPercentage("mixed", true);
 
     return `
       <div class="card">
         <h2>Treniņa rezultāti</h2>
-        <p>Globālais: ${(g*100).toFixed(0)}%</p>
-        <p>Lokālais: ${(l*100).toFixed(0)}%</p>
-        <p>Jauktais: ${(m*100).toFixed(0)}%</p>
+        <p>Globālais: ${g}</p>
+        <p>Lokālais: ${l}</p>
+        <p>Jauktais: ${m}</p>
         <hr>
         ${IS_MOBILE ? '' : '<p class="hint">Nospied SPACE, lai turpinātu ar eksperimenta galveno daļu</p>'}
       </div>
@@ -477,18 +463,16 @@ timeline.push({
 timeline.push({
   type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
   stimulus: function () {
-    const trials = jsPsych.data.get().filterCustom(d => (d.block !== undefined) && !d.ignore && !d.practice);
-    function blockAccuracy(blockName) {
-      const blockTrials = trials.filter({ block: blockName });
-      if (blockTrials.count() === 0) return "—";
-      return Math.round(blockTrials.select("correct").mean() * 100) + "%";
-    }
+    const g = getAccuracyPercentage("global", false);
+    const l = getAccuracyPercentage("local", false);
+    const m = getAccuracyPercentage("mixed", false);
+
     return `
     <div class="card">
       <h2>Paldies par dalību!</h2>
-      <p>Globālais: ${blockAccuracy("global")}</p>
-      <p>Lokālais: ${blockAccuracy("local")}</p>
-      <p>Jauktais: ${blockAccuracy("mixed")}</p>
+      <p>Globālais: ${g}</p>
+      <p>Lokālais: ${l}</p>
+      <p>Jauktais: ${m}</p>
     </div>`;
   },
   on_load: function() { saveData(); },
