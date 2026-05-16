@@ -226,7 +226,9 @@ function generateNavonHTML(global_letter, local_letter){
       });
     }
 
+// =========================
 // MOBILE VERSION (BUTTONS)
+// =========================
 if (DEVICE === "mobile" || DEVICE === "tablet") {
 
   trials.push({
@@ -262,7 +264,9 @@ if (DEVICE === "mobile" || DEVICE === "tablet") {
     },
 
     on_finish: function(data) {
+
       try {
+
         const correctAnswer =
           data.task === "global"
             ? data.global_letter
@@ -270,7 +274,7 @@ if (DEVICE === "mobile" || DEVICE === "tablet") {
 
         const set = letter_set || LETTER_SETS.letters;
 
-        let resp = null;
+        let resp;
 
         if (typeof data.response === "number") {
           resp = set[data.response];
@@ -300,6 +304,7 @@ if (DEVICE === "mobile" || DEVICE === "tablet") {
   trials.push({
     type: "html-keyboard-response",
     stimulus: generateNavonHTML(global_letter, local_letter),
+
     choices: letter_set.map(l => l.toLowerCase()),
     trial_duration: 1500,
     response_ends_trial: true,
