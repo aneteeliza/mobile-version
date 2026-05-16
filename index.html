@@ -236,6 +236,9 @@ function generateNavonHTML(global_letter, local_letter){
 
       trials.push({
         type: "html-button-response",
+        on_start: function () {
+          removeMobileButtons();
+        },
         stimulus: `
           <div style="font-size:32px; margin-bottom:20px;">
             ${generateNavonHTML(global_letter, local_letter)}
