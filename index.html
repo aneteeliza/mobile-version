@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Navon Task - jsPsych</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://unpkg.com/jspsych@6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
   <link rel="stylesheet" href="style.css">
   <style>
@@ -57,6 +58,47 @@ function getDeviceType() {
 }
 
 const DEVICE = getDeviceType();
+
+  function isMobile() {
+  return DEVICE === "mobile" || DEVICE === "tablet";
+}
+
+function showMobileButtons(choices) {
+
+  if (!isMobile()) return;
+
+  removeMobileButtons();
+
+  const container = document.createElement("div");
+  container.className = "mobile-buttons";
+  container.id = "mobile-buttons";
+
+  choices.forEach(choice => {
+
+    const btn = document.createElement("button");
+    btn.className = "mobile-btn";
+    btn.innerText = choice.toUpperCase();
+
+    btn.addEventListener("click", () => {
+
+      // simulē tastatūras nospiešanu jsPsych
+      const event = new KeyboardEvent("keydown", {
+        key: choice
+      });
+
+      document.dispatchEvent(event);
+    });
+
+    container.appendChild(btn);
+  });
+
+  document.body.appendChild(container);
+}
+
+function removeMobileButtons() {
+  const old = document.getElementById("mobile-buttons");
+  if (old) old.remove();
+}
 
 jsPsych.data.addProperties({
   participant_id: PARTICIPANT_ID,
@@ -179,35 +221,42 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
     }
 
     trials.push({
-      type: "html-keyboard-response",
-      stimulus: generateNavonHTML(global_letter, local_letter),
-      choices: letter_set.map(l => l.toLowerCase()),
-      trial_duration: 1500,
+  type: "html-keyboard-response",
+  stimulus: generateNavonHTML(global_letter, local_letter),
+  choices: letter_set.map(l => l.toLowerCase()),
+  trial_duration: 1500,
 
-      data: {
-        block: block_type,
-        trial: i+1,
-        condition: condition,
-        task: task,
-        global_letter: global_letter,
-        local_letter: local_letter
-      },
+  on_load: function() {
+    showMobileButtons(letter_set.map(l => l.toLowerCase()));
+  },
 
-      on_finish: function(data){
-        const correctAnswer =
-          (data.task === "global")
-            ? data.global_letter?.toLowerCase()
-            : data.local_letter?.toLowerCase();
+  data: {
+    block: block_type,
+    trial: i+1,
+    condition: condition,
+    task: task,
+    global_letter: global_letter,
+    local_letter: local_letter
+  },
 
-        if (!data.response) {
-          data.correct = 0;
-          data.response = "";
-        } else {
-          data.correct =
-            (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
-        }
-      }
-    });
+  on_finish: function(data){
+
+    removeMobileButtons();
+
+    const correctAnswer =
+      (data.task === "global")
+        ? data.global_letter?.toLowerCase()
+        : data.local_letter?.toLowerCase();
+
+    if (!data.response) {
+      data.correct = 0;
+      data.response = "";
+    } else {
+      data.correct =
+        (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
+    }
+  }
+});
   }
 
   return trials;
