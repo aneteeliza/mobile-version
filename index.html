@@ -1,94 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Navon Task - jsPsych</title>
-  <link href="https://unpkg.com/jspsych@6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
-  <link rel="stylesheet" href="style.css">
-  <style>
-    body {
-      background-color: black;
-      color: white;
-      font-family: monospace;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-    .navon-letter {
-      font-size: 28px;
-      font-family: monospace;
-      display: inline-block;
-      width: 28px;
-      height: 28px;
-      text-align: center;
-      opacity: 0;
-      animation: fadein 0.2s forwards;
-    }
+<meta charset="UTF-8">
+<title>Navon Task - CLEAN</title>
 
-    @keyframes fadein {
-      from { opacity: 0; transform: scale(0.5); }
-      to { opacity: 1; transform: scale(1); }
-    }
-  </style>
+<link href="https://unpkg.com/jspsych@6.3.1/css/jspsych.css" rel="stylesheet">
+
+<style>
+body {
+  background:black;
+  color:white;
+  font-family:monospace;
+  text-align:center;
+  margin:0;
+}
+
+.navon-letter {
+  font-size:28px;
+  display:inline-block;
+  width:28px;
+  height:28px;
+  opacity:0;
+  animation:fadein 0.2s forwards;
+}
+
+@keyframes fadein {
+  from {opacity:0; transform:scale(0.5);}
+  to {opacity:1; transform:scale(1);}
+}
+</style>
 </head>
+
 <body>
 
 <script src="https://unpkg.com/jspsych@6.3.1/jspsych.js"></script>
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
-<script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-survey-text.js"></script>
-<script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-survey-html-form.js"></script>
+<script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-button-response.js"></script>
 
 <script>
 
-const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyM_qyWU6VZw9p7EtBQcv_pWYGpJgdZ44KBfz2fsDj_-kGOS6aT1Fphy0eBXGNNQk6D/exec";
-
-function generateParticipantID() {
-  return "NAVON-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-}
-const PARTICIPANT_ID = generateParticipantID();
-const TIMESTAMP = new Date().toISOString();
-// ========= DEVICE =========
-function getDeviceType(){
-  const ua = navigator.userAgent;
-  if(/mobile/i.test(ua)) return "mobile";
-  if(/tablet/i.test(ua)) return "tablet";
-  return "desktop";
-}
-const DEVICE = getDeviceType();
-
-function isMobile(){
-  return DEVICE === "mobile" || DEVICE === "tablet";
-}
-
-// ========= HELPERS =========
-function getInstructionTrial(html){
-  return {
-    type: isMobile() ? "html-button-response" : "html-keyboard-response",
-    stimulus: html,
-    choices: isMobile() ? ["Turpināt"] : [" "],
-    data:{ignore:true}
-  };
-}
-
-jsPsych.data.addProperties({
-  participant_id: PARTICIPANT_ID,
-  timestamp: TIMESTAMP,
-  device: DEVICE
-});
-
-const N_TRIALS_GLOBAL = 20;
-const N_TRIALS_LOCAL  = 20;
-const N_TRIALS_MIXED  = 40;
-const GLOBAL_LETTERS_SET_1 = ["H", "S"];
-const GLOBAL_LETTERS_SET_2 = ["2", "3"];
+// ===================== BASIC =====================
 const LETTER_SETS = {
-  letters: ["H", "S"],
-  numbers: ["2", "3"]
+  letters: ["H","S"],
+  numbers: ["2","3"]
 };
+
 const GRID_SIZE = 9;
 
 const TEMPLATES = {
-  "H":[
+  H: [
     [1,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,1],
@@ -99,7 +59,7 @@ const TEMPLATES = {
     [1,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,1]
   ],
-  "S":[
+  S: [
     [0,1,1,1,1,1,1,1,0],
     [1,0,0,0,0,0,0,0,1],
     [1,0,0,0,0,0,0,0,0],
@@ -110,644 +70,135 @@ const TEMPLATES = {
     [1,0,0,0,0,0,0,0,1],
     [0,1,1,1,1,1,1,1,0]
   ],
-  "2":[
-  [0,1,1,1,1,1,1,1,0],
-  [1,0,0,0,0,0,0,0,1],
-  [0,0,0,0,0,0,0,1,0],
-  [0,0,0,0,0,1,0,0,0],
-  [0,0,0,0,1,0,0,0,0],
-  [0,0,0,1,0,0,0,0,0],
-  [0,0,1,0,0,0,0,0,0],
-  [1,0,0,0,0,0,0,0,0],
-  [1,1,1,1,1,1,1,1,1]
-],
-"3":[
-  [0,1,1,1,1,1,1,1,0],
-  [1,0,0,0,0,0,0,0,1],
-  [0,0,0,0,0,0,0,0,1],
-  [0,0,0,0,0,0,0,0,1],
-  [0,0,0,1,1,1,1,1,0],
-  [0,0,0,0,0,0,0,0,1],
-  [0,0,0,0,0,0,0,0,1],
-  [1,0,0,0,0,0,0,0,1],
-  [0,1,1,1,1,1,1,1,0]
-]
+  "2": [
+    [0,1,1,1,1,1,1,1,0],
+    [1,0,0,0,0,0,0,0,1],
+    [0,0,0,0,0,0,0,1,0],
+    [0,0,0,0,0,1,0,0,0],
+    [0,0,0,0,1,0,0,0,0],
+    [0,0,0,1,0,0,0,0,0],
+    [0,0,1,0,0,0,0,0,0],
+    [1,0,0,0,0,0,0,0,0],
+    [1,1,1,1,1,1,1,1,1]
+  ],
+  "3": [
+    [0,1,1,1,1,1,1,1,0],
+    [1,0,0,0,0,0,0,0,1],
+    [0,0,0,0,0,0,0,0,1],
+    [0,0,0,0,0,0,0,0,1],
+    [0,0,0,1,1,1,1,1,0],
+    [0,0,0,0,0,0,0,0,1],
+    [0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [0,1,1,1,1,1,1,1,0]
+  ]
 };
 
-// ========= STIMULUS =========
-function generateNavonHTML(global_letter, local_letter){
-  let html="<div>";
-  const t=TEMPLATES[global_letter];
-  for(let r=0;r<GRID_SIZE;r++){
-    html+="<div>";
-    for(let c=0;c<GRID_SIZE;c++){
-      html+=t[r][c]
-        ? `<span class="navon-letter">${local_letter}</span>`
+// ===================== NAVON STIMULUS =====================
+function generateNavon(globalL, localL){
+  let html = "<div>";
+
+  const t = TEMPLATES[globalL];
+
+  for (let r=0;r<GRID_SIZE;r++){
+    html += "<div>";
+    for (let c=0;c<GRID_SIZE;c++){
+      html += t[r][c]
+        ? `<span class="navon-letter">${localL}</span>`
         : `<span class="navon-letter">&nbsp;</span>`;
     }
-    html+="</div>";
+    html += "</div>";
   }
-  html+="</div>";
-  return html;
+
+  return html + "</div>";
 }
 
-// ========= TRIAL FACTORY =========
-function createTrial(global_letter, local_letter, task, block){
+// ===================== TRIAL =====================
+function createTrial(globalL, localL, task, setType, block){
 
-  const set = (global_letter.match(/[0-9]/))
-    ? LETTER_SETS.numbers
-    : LETTER_SETS.letters;
-
-  const plugin = isMobile()
-    ? "html-button-response"
-    : "html-keyboard-response";
+  const correctKey =
+    setType === "letters"
+      ? (task === "global" ? globalL.toLowerCase() : localL.toLowerCase())
+      : (task === "global" ? globalL : localL);
 
   return {
-    type: plugin,
-    stimulus: generateNavonHTML(global_letter, local_letter),
+    type: "html-keyboard-response",
+    stimulus: generateNavon(globalL, localL),
 
-    choices: isMobile()
-      ? set
-      : set.map(x=>x.toLowerCase()),
+    choices: setType === "letters"
+      ? ["h","s"]
+      : ["2","3"],
 
-    button_html: isMobile()
-      ? '<button class="jspsych-btn">%choice%</button>'
-      : undefined,
-
-    trial_duration:1500,
-
-    data:{
-      block:block,
-      task:task,
-      global_letter,
-      local_letter
+    data: {
+      block,
+      task,
+      global_letter: globalL,
+      local_letter: localL
     },
 
-    on_finish:function(data){
-
-      let response = data.response;
-
-      if(isMobile()){
-        response = set[data.response]?.toLowerCase();
-      }
-
-      const correct =
-        (task==="global"
-          ? global_letter
-          : local_letter).toLowerCase();
-
-      if(response==null){
-        data.correct=0;
-        data.response="";
-      }else{
-        data.correct = response===correct ? 1:0;
-        data.response=response;
-      }
+    on_finish: function(data){
+      data.correct = (data.response === correctKey) ? 1 : 0;
     }
   };
 }
 
-function saveData() {
-  const columns = [
-    "participant_id",
-    "timestamp",
-    "device",
+// ===================== TRIAL BUILDER =====================
+function createTrials(block, n, setType){
 
-    // demogrāfija
-    "age",
-    "gender",
-    "employment_status",
-    "industry",
-    "position",
-    "occupation",
-    "gaming",
+  const letters = setType === "letters"
+    ? LETTER_SETS.letters
+    : LETTER_SETS.numbers;
 
-    // eksperiments
-    "block",
-    "trial",
-    "condition",
-    "task",
-    "global_letter",
-    "local_letter",
-    "response",
-    "correct",
-    "rt"
-  ];
+  let trials = [];
 
-  const rows = jsPsych.data.get()
-          .filterCustom(d => 
-            d.trial_type === "html-keyboard-response" &&
-            !d.ignore &&
-            !d.practice
-          )
-          .values()
-          .map(r => {
-            let obj = {};
-            columns.forEach(c => obj[c] = r[c] ?? "");
-            return obj;
-          });
+  for (let i=0;i<n;i++){
 
-  fetch(GOOGLE_SHEETS_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain"
-    },
-    body: JSON.stringify(rows)
-  }).then(() => {
-    console.log("Data sent to sheet");
-  }).catch(error => {
-    console.error("Error sending data:", error);
-  });
+    const globalL = letters[Math.floor(Math.random()*2)];
+    const localL  = letters[Math.floor(Math.random()*2)];
+    const task = Math.random() < 0.5 ? "global" : "local";
+
+    trials.push(createTrial(globalL, localL, task, setType, block));
+  }
+
+  return trials;
 }
 
+// ===================== TIMELINE =====================
 let timeline = [];
 
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2>Sveiki!</h2>
-
-      <p>Šis ir uzmanības un reakcijas laika eksperiments (Neivona uzdevums).</p>
-
-      <p>Tests aizņems 5-10 minūtes.</p>
-
-      <p>Pārliecinies, ka atrodies mierīgā vidē un Tev netiks novērsta uzmanība.</p>
-
-      <p>Tavs uzdevums būs reaģēt pēc iespējas ātrāk un precīzāk uz redzamajiem stimuliem.</p>
-
-      <p>Dažos blokos Tev būs jākoncentrējas uz lielo burtu vai ciparu, citos - uz mazajiem burtiem/cipariem.</p>
-
-      <div class="hint">Nospied SPACE, lai turpinātu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
-
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h3>Kā izskatās uzdevums?</h3>
-
-      <p>Tu redzēsi lielu burtu/ciparu, kas veidots no daudziem maziem burtiem/cipariem.</p>
-
-      <p><b>Lielais burts/cipars</b> = visa forma (piemēram, liels H vai S)</p>
-      <p><b>Mazie burti/cipari</b> = sīkie burtiņi vai cipari, no kuriem sastāv lielais burts vai cipars</p>
-
-      <hr>
-
-      <p><b>Globālais līmenis</b> = lielais burts/cipars (kopējā forma)</p>
-      <p><b>Lokālais līmenis</b> = mazie burti/cipari</p>
-
-      <div class="hint">Nospied SPACE, lai turpinātu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
-
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h3>Tavs uzdevums</h3>
-
-      <p>Spied attiecīgā burta vai cipara taustiņu.</p>
-      <p>Piemēram, spied <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.</p>
-
-      <p>Atbildi pēc iespējas ātri (maksimālais laiks: 1,5 sekundes).</p>
-
-      <div class="hint">Nospied SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
-
-
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-  <div class="card">
-    <h2>Neivona uzdevums</h2>
-    <p>Vēro stimulu, kas parādīsies uz ekrāna.</p>
-    <p>Spied attiecīgā burta vai cipara taustiņu uz tastatūras.</p>
-    <p>Atbildes jāsniedz ātri, jo limits ir 1,5 sekundes.</p>
-    <div class="hint">Nospied SPACE, lai sāktu eksperimentu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: {ignore:true}
-});
-
-function createPracticeBlock(blockName, nTrials){
-  return createTrials(blockName, nTrials, blockName, LETTER_SETS.letters).map(t => ({
-    ...t,
-    data: {
-      ...t.data,
-      practice: true
-    },
-    on_finish: function(data){
-
-  const correctAnswer =
-    (data.task === "global")
-      ? data.global_letter?.toLowerCase()
-      : data.local_letter?.toLowerCase();
-
-  if (!data.response) {
-    data.correct = 0;
-    data.response = "";
-  } else {
-    data.correct =
-      (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
-  }
-}
-  }));
+// INSTRUCTIONS
+function instruction(text){
+  return {
+    type: "html-keyboard-response",
+    stimulus: text,
+    choices: [" "]
+  };
 }
 
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2>Treniņš</h2>
-      <p>Mēs sāksim ar īsu izmēģinājumu katram uzdevuma tipam.</p>
-      <p>Nospied SPACE, lai sāktu.</p>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
+timeline.push(instruction("<h2>Navon uzdevums</h2><p>Spied SPACE</p>"));
+timeline.push(instruction("<p>Fokusējies uz lielo vai mazo burtu</p>"));
 
-// GLOBAL terniņš
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: "<h3>Treniņš: Globālais bloks</h3><p>Fokusējies uz LIELAJIEM burtiem.</p><p>SPACE, lai sāktu</p>",
-  choices: [" "],
-  data: { ignore: true }
-});
-timeline.push(...createPracticeBlock("global", 4));
+// GLOBAL letters
+timeline.push(instruction("<h3>Globālais bloks (H/S)</h3>"));
+timeline.push(...createTrials("global_letters", 10, "letters"));
 
-// LOCAL treniņš
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: "<h3>Treniņš: Lokālais bloks</h3><p>Fokusējies uz MAZAJIEM burtiem.</p><p>SPACE, lai sāktu</p>",
-  choices: [" "],
-  data: { ignore: true }
-});
-timeline.push(...createPracticeBlock("local", 4));
+// LOCAL letters
+timeline.push(instruction("<h3>Lokālais bloks (H/S)</h3>"));
+timeline.push(...createTrials("local_letters", 10, "letters"));
 
-// MIXED treniņš
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: "<h3>Treniņš: Jauktais bloks</h3><p>↑ = globālais, ↓ = lokālais</p><p>SPACE, lai sāktu</p>",
-  choices: [" "],
-  data: { ignore: true }
-});
-timeline.push(...createPracticeBlock("mixed", 6));
+// GLOBAL numbers
+timeline.push(instruction("<h3>Globālais bloks (2/3)</h3>"));
+timeline.push(...createTrials("global_numbers", 10, "numbers"));
 
-function getPracticeAccuracy(block){
-  const d = jsPsych.data.get().filter({practice: true, block: block});
-  return d.count() === 0 ? 0 : d.select("correct").mean();
-}
+// LOCAL numbers
+timeline.push(instruction("<h3>Lokālais bloks (2/3)</h3>"));
+timeline.push(...createTrials("local_numbers", 10, "numbers"));
 
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: function(){
-
-    const g = getPracticeAccuracy("global");
-    const l = getPracticeAccuracy("local");
-    const m = getPracticeAccuracy("mixed");
-
-    return `
-      <div class="card">
-        <h2>Treniņa rezultāti</h2>
-
-        <p>Globālais: ${(g*100).toFixed(0)}%</p>
-        <p>Lokālais: ${(l*100).toFixed(0)}%</p>
-        <p>Jauktais: ${(m*100).toFixed(0)}%</p>
-
-        <hr>
-
-        <p class="hint">Nospied SPACE, lai turpinātu ar eksperimenta galveno daļu</p>
-      </div>
-    `;
-  },
-  choices: [" "],
-  data: { ignore: true }
-});
-
-// GLOBAL ar H/S
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-  <div class="card">
-    <h2>Globālais bloks</h2>
-    <p>Fokusējies uz LIELAJIEM burtiem.</p>
-    <p>Ignorē mazos burtiņus.</p>
-    <p>Spied taustiņu <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.</p>
-    <div class="hint">Nospied SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: {ignore:true}
-});
-timeline.push(...createTrials("global", N_TRIALS_GLOBAL, "global", LETTER_SETS.letters));
-
-// STIMULU MAIŅA
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
-      <div class="hint">Nospied SPACE, lai turpinātu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
-
-// GLOBAL ar 2/3
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2>Globālais bloks</h2>
-      <p>Turpmāk redzēsi ciparus <b>2</b> un <b>3</b>.</p>
-      <p>Fokusējies uz LIELAJIEM cipariem.</p>
-      <p>Spied taustiņu <b>2</b>, ja redzi 2, un <b>3</b>, ja redzi 3.</p>
-      <div class="hint">SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: {ignore:true}
-});
-timeline.push(...createTrials("global", N_TRIALS_GLOBAL, "global", LETTER_SETS.numbers));
-
-// LOCAL ar H/S
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-  <div class="card">
-    <h2>Lokālais bloks</h2>
-    <p>Fokusējies uz MAZAJIEM burtiem.</p>
-    <p>Ignorē lielos burtus.</p>
-    <p>Spied taustiņu <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.</p>
-    <div class="hint">Nospied SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: {ignore:true}
-});
-timeline.push(...createTrials("local", N_TRIALS_LOCAL, "local", LETTER_SETS.letters));
-
-// STIMULU MAIŅA
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
-      <div class="hint">Nospied SPACE, lai turpinātu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
-
-// LOCAL ar 2/3
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2>Lokālais bloks</h2>
-      <p>Fokusējies uz MAZAJIEM cipariem.</p>
-      <p>Spied taustiņu <b>2</b>, ja redzi 2, un <b>3</b>, ja redzi 3.</p>
-      <div class="hint">SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: {ignore:true}
-});
-
-timeline.push(...createTrials("local", N_TRIALS_LOCAL, "local", LETTER_SETS.numbers));
-
-
-// MIX ar H/S
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-  <div class="card">
-    <h2>Jauktais bloks</h2>
-    <p>Pirms katra uzdevuma ir bultiņa:</p>
-    <p>↑ - fokusējies uz globālo (lielo) burtu</p>
-    <p>↓ - fokusējies uz lokālo (mazo) burtu</p>
-    <p>Spied taustiņu <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.</p>
-    <div class="hint">Nospied SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: {ignore:true}
-});
-timeline.push(...createTrials("mixed", N_TRIALS_MIXED, null, LETTER_SETS.letters));
-
-// STIMULU MAIŅA
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
-      <div class="hint">Nospied SPACE, lai turpinātu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
-
-// MIX ar 2/3
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h2>Jauktais bloks</h2>
-      <p>↑ globālais, ↓ lokālais</p>
-      <p>Spied taustiņu <b>2</b>, ja redzi 2, un <b>3</b>, ja redzi 3.</p>
-      <div class="hint">SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: {ignore:true}
-});
-
-timeline.push(...createTrials("mixed", N_TRIALS_MIXED, null, LETTER_SETS.numbers));
-
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: `
-    <div class="card">
-      <h3>Lūdzu, atbildi uz dažiem jautājumiem par sevi</h3>
-      <div class="hint">Nospied SPACE, lai sāktu</div>
-    </div>
-  `,
-  choices: [" "],
-  data: { ignore: true }
-});
-
-timeline.push({
-  type: "survey-html-form",
-  html: `
-    <div class="card">
-      <p>Tavs vecums:</p>
-      <input name="age" type="number" min="1" max="99" required />
-    </div>
-  `,
-  button_label: "Turpināt",
-  on_finish: function(data){
-    const age = parseInt(data.response.age);
-    if (!isNaN(age)) {
-      jsPsych.data.addProperties({ age: age });
-    }
-  }
-});
-
-timeline.push({
-  type: "survey-html-form",
-  html: `
-    <div class="card">
-      <p>Tavs dzimums:</p>
-      <select name="gender" required>
-        <option value="">Izvēlies</option>
-        <option value="male">Vīrietis</option>
-        <option value="female">Sieviete</option>
-        <option value="other">Cits</option>
-        <option value="na">Nevēlos norādīt</option>
-      </select>
-    </div>
-  `,
-  button_label: "Turpināt",
-  on_finish: function(data){
-    jsPsych.data.addProperties({
-      gender: data.response.gender
-    });
-  }
-});
-
-timeline.push({
-  type: "survey-html-form",
-  html: `
-    <div class="card">
-      <p>Kāds ir Tavs pašreizējais nodarbošanās statuss?</p>
-
-      <select name="employment_status" id="employment_status" required>
-        <option value="">Izvēlies</option>
-        <option value="employed">Strādā algotu darbu</option>
-        <option value="self">Pašnodarbināts / uzņēmējs</option>
-        <option value="student">Mācies / skolēns / students</option>
-        <option value="unemployed">Meklē darbu</option>
-        <option value="parental">Bērna kopšanas atvaļinājumā</option>
-        <option value="retired">Pensionārs</option>
-        <option value="other">Cits</option>
-      </select>
-
-      <div id="industry_block" style="display:none; margin-top:15px;">
-        <p>Kādā nozarē Tu darbojies?</p>
-
-        <select name="industry">
-          <option value="">Izvēlies</option>
-          <option value="it">IT</option>
-          <option value="education">Izglītība</option>
-          <option value="services">Pakalpojumi</option>
-          <option value="healthcare">Veselības aprūpe</option>
-          <option value="other">Cits</option>
-        </select>
-      </div>
-    </div>
-  `,
-  button_label: "Turpināt",
-
-  on_load: function () {
-    const select = document.getElementById("employment_status");
-    const industryBlock = document.getElementById("industry_block");
-
-    select.addEventListener("change", function () {
-      if (this.value === "employed" || this.value === "self") {
-        industryBlock.style.display = "block";
-      } else {
-        industryBlock.style.display = "none";
-      }
-    });
-  },
-
-  on_finish: function(data){
-    jsPsych.data.addProperties({
-      employment_status: data.response.employment_status,
-      industry: data.response.industry || null
-    });
-  }
-});
-
-timeline.push({
-  type: "survey-html-form",
-  html: `
-    <div class="card">
-      <p>Cik bieži Tu spēlē videospēles?</p>
-
-      <select name="gaming" required>
-        <option value="">Izvēlies</option>
-        <option value="never">Nekad</option>
-        <option value="rare">Ļoti reti (dažas reizes gadā vai retāk)</option>
-        <option value="sometimes">Reizēm (dažas reizes mēnesī)</option>
-        <option value="often">Bieži (katru nedēļu vai biežāk)</option>
-        <option value="very_often">Ļoti bieži (gandrīz katru dienu)</option>
-      </select>
-    </div>
-  `,
-  button_label: "Pabeigt",
-  on_finish: function(data){
-    jsPsych.data.addProperties({
-      gaming: data.response.gaming
-    });
-  }
-});
-
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: function () {
-    const trials = jsPsych.data.get()
-      .filterCustom(d => d.trial_type === "html-keyboard-response" && !d.ignore && d.block && !d.practice);
-
-    function blockAccuracy(blockName) {
-      const blockTrials = trials.filter({ block: blockName });
-      if (blockTrials.count() === 0) return "—";
-      return Math.round(blockTrials.select("correct").mean() * 100) + "%";
-    }
-
-    const globalAcc = blockAccuracy("global");
-    const localAcc  = blockAccuracy("local");
-    const mixedAcc  = blockAccuracy("mixed");
-    const meanRT = Math.round(trials.filter({ correct: 1 }).select("rt").mean());
-
-    return `
-    <div class="card">
-      <h2 class="hint">Paldies par dalību!</h2>
-      <h3>Precizitāte pa blokiem</h3>
-      <p><strong>Globālais bloks:</strong> ${globalAcc}</p>
-      <p><strong>Lokālais bloks:</strong> ${localAcc}</p>
-      <p><strong>Jauktais bloks:</strong> ${mixedAcc}</p>
-      <p style="margin-top:15px;"><strong>Vidējais reakcijas laiks:</strong> ${meanRT} ms</p>
-      </div>
-    `;
-  },
-  on_load: function() {
-    saveData();
-  },
-  choices: jsPsych.NO_KEYS,
-  data: { ignore: true }
-});
-
+// ===================== START =====================
 jsPsych.init({
   timeline: timeline
 });
+
 </script>
 
 </body>
