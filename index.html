@@ -362,7 +362,6 @@ function createPracticeBlock(blockName, nTrials, letterSet){
       on_finish: function(data) {
         const correctVal = (data.task === "global") ? data.global_letter : data.local_letter;
         
-        // Handle practice data clean-ups without string mutation bugs
         if (IS_MOBILE) {
           if (data.response === null || data.response === undefined) {
             data.correct = 0;
@@ -577,7 +576,8 @@ timeline.push({
   `,
   button_label: "Turpināt",
   on_finish: function(data){
-    const age = parseInt(data.response.age);
+    const res = JSON.parse(data.responses);
+    const age = parseInt(res.age);
     if (!isNaN(age)) {
       jsPsych.data.addProperties({ age: age });
     }
@@ -600,7 +600,8 @@ timeline.push({
   `,
   button_label: "Turpināt",
   on_finish: function(data){
-    jsPsych.data.addProperties({ gender: data.response.gender });
+    const res = JSON.parse(data.responses);
+    jsPsych.data.addProperties({ gender: res.gender });
   }
 });
 
@@ -645,9 +646,10 @@ timeline.push({
     });
   },
   on_finish: function(data){
+    const res = JSON.parse(data.responses);
     jsPsych.data.addProperties({
-      employment_status: data.response.employment_status,
-      industry: data.response.industry || null
+      employment_status: res.employment_status,
+      industry: res.industry || null
     });
   }
 });
@@ -669,7 +671,8 @@ timeline.push({
   `,
   button_label: "Pabeigt",
   on_finish: function(data){
-    jsPsych.data.addProperties({ gaming: data.response.gaming });
+    const res = JSON.parse(data.responses);
+    jsPsych.data.addProperties({ gaming: res.gaming });
   }
 });
 
@@ -686,8 +689,8 @@ timeline.push({
     }
     
     const globalAcc = blockAccuracy("global");
-    const localAcc  = blockAccuracy("local");
-    const mixedAcc  = blockAccuracy("mixed");
+    const localAcc   = blockAccuracy("local");
+    const mixedAcc   = blockAccuracy("mixed");
     const meanRT = Math.round(trials.filter({ correct: 1 }).select("rt").mean()) || 0;
     
     return `
