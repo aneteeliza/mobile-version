@@ -318,7 +318,7 @@ function saveData() {
 let timeline = [];
 
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2>Sveiki!</h2>
@@ -332,12 +332,12 @@ timeline.push({
       <div class="hint">Nospied SPACE, lai turpinātu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h3>Kā izskatās uzdevums?</h3>
@@ -355,12 +355,12 @@ timeline.push({
       <div class="hint">Nospied SPACE, lai turpinātu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h3>Tavs uzdevums</h3>
@@ -373,13 +373,13 @@ timeline.push({
       <div class="hint">Nospied SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
   <div class="card">
     <h2>Neivona uzdevums</h2>
@@ -389,7 +389,7 @@ timeline.push({
     <div class="hint">Nospied SPACE, lai sāktu eksperimentu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: {ignore:true}
 });
 
@@ -419,7 +419,7 @@ function createPracticeBlock(blockName, nTrials){
 }
 
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2>Treniņš</h2>
@@ -427,33 +427,33 @@ timeline.push({
       <p>Nospied SPACE, lai sāktu.</p>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 // GLOBAL terniņš
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: "<h3>Treniņš: Globālais bloks</h3><p>Fokusējies uz LIELAJIEM burtiem.</p><p>SPACE, lai sāktu</p>",
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 timeline.push(...createPracticeBlock("global", 4));
 
 // LOCAL treniņš
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: "<h3>Treniņš: Lokālais bloks</h3><p>Fokusējies uz MAZAJIEM burtiem.</p><p>SPACE, lai sāktu</p>",
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 timeline.push(...createPracticeBlock("local", 4));
 
 // MIXED treniņš
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: "<h3>Treniņš: Jauktais bloks</h3><p>↑ = globālais, ↓ = lokālais</p><p>SPACE, lai sāktu</p>",
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 timeline.push(...createPracticeBlock("mixed", 6));
@@ -464,7 +464,7 @@ function getPracticeAccuracy(block){
 }
 
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: function(){
 
     const g = getPracticeAccuracy("global");
@@ -485,13 +485,13 @@ timeline.push({
       </div>
     `;
   },
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 // GLOBAL ar H/S
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
   <div class="card">
     <h2>Globālais bloks</h2>
@@ -501,27 +501,27 @@ timeline.push({
     <div class="hint">Nospied SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: {ignore:true}
 });
 timeline.push(...createTrials("global", N_TRIALS_GLOBAL, "global", LETTER_SETS.letters));
 
 // STIMULU MAIŅA
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
       <div class="hint">Nospied SPACE, lai turpinātu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 // GLOBAL ar 2/3
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2>Globālais bloks</h2>
@@ -531,14 +531,14 @@ timeline.push({
       <div class="hint">SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: {ignore:true}
 });
 timeline.push(...createTrials("global", N_TRIALS_GLOBAL, "global", LETTER_SETS.numbers));
 
 // LOCAL ar H/S
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
   <div class="card">
     <h2>Lokālais bloks</h2>
@@ -548,27 +548,27 @@ timeline.push({
     <div class="hint">Nospied SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: {ignore:true}
 });
 timeline.push(...createTrials("local", N_TRIALS_LOCAL, "local", LETTER_SETS.letters));
 
 // STIMULU MAIŅA
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
       <div class="hint">Nospied SPACE, lai turpinātu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 // LOCAL ar 2/3
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2>Lokālais bloks</h2>
@@ -577,7 +577,7 @@ timeline.push({
       <div class="hint">SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: {ignore:true}
 });
 
@@ -586,7 +586,7 @@ timeline.push(...createTrials("local", N_TRIALS_LOCAL, "local", LETTER_SETS.numb
 
 // MIX ar H/S
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
   <div class="card">
     <h2>Jauktais bloks</h2>
@@ -597,27 +597,27 @@ timeline.push({
     <div class="hint">Nospied SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: {ignore:true}
 });
 timeline.push(...createTrials("mixed", N_TRIALS_MIXED, null, LETTER_SETS.letters));
 
 // STIMULU MAIŅA
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
       <div class="hint">Nospied SPACE, lai turpinātu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
 // MIX ar 2/3
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h2>Jauktais bloks</h2>
@@ -626,21 +626,21 @@ timeline.push({
       <div class="hint">SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: {ignore:true}
 });
 
 timeline.push(...createTrials("mixed", N_TRIALS_MIXED, null, LETTER_SETS.numbers));
 
 timeline.push({
-  type: "html-keyboard-response",
+  type: "html-button-response",
   stimulus: `
     <div class="card">
       <h3>Lūdzu, atbildi uz dažiem jautājumiem par sevi</h3>
       <div class="hint">Nospied SPACE, lai sāktu</div>
     </div>
   `,
-  choices: [" "],
+  choices: ["Turpināt"],
   data: { ignore: true }
 });
 
