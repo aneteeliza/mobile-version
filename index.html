@@ -184,7 +184,7 @@ function generateNavonHTML(global_letter, local_letter){
 
 function instructionScreen(htmlText){
   let fixedText = IS_MOBILE 
-    ? htmlText.replace("Nospied SPACE, lai turpinātu", "Nospied pogu zemāk, lai turpinātu").replace("Nospied SPACE, lai sāktu", "Nospied pogu zemāk, lai sāktu")
+    ? htmlText.replace(/Nospied SPACE, lai turpinātu/g, "Nospied pogu zemāk, lai turpinātu").replace(/Nospied SPACE, lai sāktu/g, "Nospied pogu zemāk, lai sāktu")
     : htmlText;
 
   return IS_MOBILE
@@ -254,8 +254,7 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
               data.response = null; 
               data.correct = 0; 
             } else {
-              // SAFE HARDCODING: Convert index (0 or 1) directly back to string using literal check
-              let selectedVal = letter_set[data.response];
+              let selectedVal = letter_set[parseInt(data.response)];
               data.response = selectedVal;
               data.correct = (selectedVal === correct) ? 1 : 0;
             }
@@ -357,21 +356,32 @@ timeline.push(
 );
 
 function createPracticeBlock(blockName, nTrials, letterSet){
-  return createTrials(blockName, nTrials, blockName, letterSet).map(t => ({
-    ...t,
-    data: {
-      ...t.data,
-      practice: true
-    },
-    on_finish: function(data){
-      const correctAnswer = (data.task === "global") ? data.global_letter : data.local_letter;
-      if (!data.response) {
-        data.correct = 0;
-      } else {
-        data.correct = (data.response.toUpperCase() === correctAnswer.toUpperCase()) ? 1 : 0;
+  return createTrials(blockName, nTrials, blockName, letterSet).map(t => {
+    return {
+      ...t,
+      on_finish: function(data) {
+        const correctVal = (data.task === "global") ? data.global_letter : data.local_letter;
+        
+        // Handle practice data clean-ups without string mutation bugs
+        if (IS_MOBILE) {
+          if (data.response === null || data.response === undefined) {
+            data.correct = 0;
+          } else {
+            let chosen = letterSet[parseInt(data.response)];
+            data.response = chosen;
+            data.correct = (chosen === correctVal) ? 1 : 0;
+          }
+        } else {
+          if (data.response === null) {
+            data.correct = 0;
+          } else {
+            data.correct = (data.response.toUpperCase() === correctVal.toUpperCase()) ? 1 : 0;
+          }
+        }
+        data.practice = true;
       }
-    }
-  }));
+    };
+  });
 }
 
 timeline.push(
@@ -399,8 +409,8 @@ timeline.push(
 );
 timeline.push(...createPracticeBlock("mixed", 6, LETTER_SETS.letters));
 
-function getPracticeAccuracy(block){
-  const d = jsPsych.data.get().filter({practice: true, block: block});
+function getPracticeAccuracy(blockName){
+  const d = jsPsych.data.get().filter({practice: true, block: blockName});
   return d.count() === 0 ? 0 : d.select("correct").mean();
 }
 
