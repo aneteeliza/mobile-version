@@ -67,7 +67,6 @@ const DEVICE = getDeviceType();
 }
 
 function showMobileButtons(choices) {
-
   if (!isMobile()) return;
 
   removeMobileButtons();
@@ -77,19 +76,18 @@ function showMobileButtons(choices) {
   container.id = "mobile-buttons";
 
   choices.forEach(choice => {
-
     const btn = document.createElement("button");
     btn.className = "mobile-btn";
     btn.innerText = choice.toUpperCase();
 
     btn.addEventListener("click", () => {
 
-      // simulē tastatūras nospiešanu jsPsych
-      const event = new KeyboardEvent("keydown", {
-        key: choice
-      });
+      removeMobileButtons();
 
-      document.dispatchEvent(event);
+      jsPsych.finishTrial({
+        response: choice,
+        rt: performance.now()
+      });
     });
 
     container.appendChild(btn);
