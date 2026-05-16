@@ -226,72 +226,95 @@ function generateNavonHTML(global_letter, local_letter){
       });
     }
 
-// =========================
 // MOBILE VERSION (BUTTONS)
-// =========================
-trials.push({
-  type: "html-button-response",
+if (DEVICE === "mobile" || DEVICE === "tablet") {
 
-  stimulus: `
-    <div style="font-size:32px; margin-bottom:20px;">
-      ${generateNavonHTML(global_letter, local_letter)}
-    </div>
-  `,
+  trials.push({
+    type: "html-button-response",
 
-  choices: (letter_set || LETTER_SETS.letters).map(l => l.toUpperCase()),
+    stimulus: `
+      <div style="font-size:32px; margin-bottom:20px;">
+        ${generateNavonHTML(global_letter, local_letter)}
+      </div>
+    `,
 
-  button_html: `
-    <button class="jspsych-btn" style="
-      font-size:28px;
-      width:120px;
-      height:80px;
-      margin:10px;
-    ">%choice%</button>
-  `,
+    choices: (letter_set || LETTER_SETS.letters).map(l => l.toUpperCase()),
 
-  response_ends_trial: true,
-  trial_duration: null,
+    button_html: `
+      <button class="jspsych-btn" style="
+        font-size:28px;
+        width:120px;
+        height:80px;
+        margin:10px;
+      ">%choice%</button>
+    `,
 
-  data: {
-    block: block_type,
-    trial: i + 1,
-    condition,
-    task,
-    global_letter,
-    local_letter
-  },
+    response_ends_trial: true,
+    trial_duration: null,
 
-  on_finish: function(data) {
-    try {
-      const correctAnswer =
-        data.task === "global"
-          ? data.global_letter
-          : data.local_letter;
+    data: {
+      block: block_type,
+      trial: i + 1,
+      condition,
+      task,
+      global_letter,
+      local_letter
+    },
 
-      let resp = null;
+    on_finish: function(data) {
+      try {
+        const correctAnswer =
+          data.task === "global"
+            ? data.global_letter
+            : data.local_letter;
 
-      if (typeof data.response === "number") {
-        resp = (letter_set || LETTER_SETS.letters)[data.response];
-      } else {
-        resp = data.response;
-      }
+        const set = letter_set || LETTER_SETS.letters;
 
-      if (!resp || !correctAnswer) {
+        let resp = null;
+
+        if (typeof data.response === "number") {
+          resp = set[data.response];
+        } else {
+          resp = data.response;
+        }
+
+        if (!resp || !correctAnswer) {
+          data.correct = 0;
+          data.response = "";
+          return;
+        }
+
+        data.response = resp;
+        data.correct = (resp === correctAnswer) ? 1 : 0;
+
+      } catch (e) {
+        console.error("Trial crash:", e);
         data.correct = 0;
         data.response = "";
-        return;
       }
-
-      data.response = resp;
-      data.correct = resp === correctAnswer ? 1 : 0;
-
-    } catch (e) {
-      console.error("Trial crash:", e);
-      data.correct = 0;
-      data.response = "";
     }
-  }
-});
+  });
+
+} else {
+
+  trials.push({
+    type: "html-keyboard-response",
+    stimulus: generateNavonHTML(global_letter, local_letter),
+    choices: letter_set.map(l => l.toLowerCase()),
+    trial_duration: 1500,
+    response_ends_trial: true,
+
+    data: {
+      block: block_type,
+      trial: i + 1,
+      condition,
+      task,
+      global_letter,
+      local_letter
+    }
+  });
+
+}
       
     // =========================
     // DESKTOP VERSION (KEYBOARD)
