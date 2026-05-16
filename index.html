@@ -47,7 +47,6 @@
 
 <script src="https://unpkg.com/jspsych@6.3.1/jspsych.js"></script>
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
-<!-- Added HTML Button response plugin for mobile users -->
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-button-response.js"></script>
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-survey-text.js"></script>
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-survey-html-form.js"></script>
@@ -191,7 +190,6 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
       });
     }
 
-    // Determine target characters for mobile buttons or keyboard layout
     const formattedChoices = letter_set.map(l => l.toLowerCase());
 
     trials.push({
@@ -214,7 +212,6 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
             : data.local_letter?.toLowerCase();
 
         if (IS_MOBILE) {
-          // In html-button-response, response is the numeric index of the clicked button
           if (data.button_pressed === null || data.button_pressed === undefined || data.button_pressed === -1) {
             data.correct = 0;
             data.response = "";
@@ -224,7 +221,6 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
             data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
           }
         } else {
-          // Desktop handling
           if (!data.response) {
             data.correct = 0;
             data.response = "";
@@ -262,6 +258,7 @@ function saveData() {
     "rt"
   ];
 
+  // FIXED: Filter checks for both keyboard and button plugins
   const rows = jsPsych.data.get()
           .filterCustom(d => 
             (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") &&
@@ -290,7 +287,6 @@ function saveData() {
 
 let timeline = [];
 
-// Helper text function based on device type
 function hintText(desktopHint, mobileHint) {
   return IS_MOBILE ? mobileHint : desktopHint;
 }
@@ -729,6 +725,7 @@ timeline.push({
 timeline.push({
   type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
   stimulus: function () {
+    // FIXED: Filter checks for both response types to generate end-screen scores accurately
     const trials = jsPsych.data.get()
       .filterCustom(d => (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") && !d.ignore && d.block && !d.practice);
 
