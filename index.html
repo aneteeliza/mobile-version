@@ -228,95 +228,111 @@ function generateNavonHTML(global_letter, local_letter){
         data: { ignore: true }
       });
     }
+// =========================
+// MOBILE VERSION
+// =========================
+if (DEVICE === "mobile" || DEVICE === "tablet") {
 
-    // =========================
-    // MOBILE VERSION
-    // =========================
-    if (DEVICE === "mobile" || DEVICE === "tablet") {
+  trials.push({
+    type: "html-button-response",
 
-      trials.push({
-        type: "html-button-response",
-        on_start: function () {
-          removeMobileButtons();
-        },
-        stimulus: `
-          <div style="font-size:32px; margin-bottom:20px;">
-            ${generateNavonHTML(global_letter, local_letter)}
-          </div>
-        `,
-        choices: letter_set.map(l => l.toUpperCase()),
-        button_html: `
-          <button class="jspsych-btn" style="
-            font-size:28px;
-            width:120px;
-            height:80px;
-            margin:10px;
-          ">%choice%</button>
-        `,
-        response_ends_trial: true,
-        trial_duration: 1500,
+    on_start: function () {
+      removeMobileButtons();
+    },
 
-        data: {
-          block: block_type,
-          trial: i + 1,
-          condition,
-          task,
-          global_letter,
-          local_letter
-        },
+    stimulus: `
+      <div style="font-size:32px; margin-bottom:20px;">
+        ${generateNavonHTML(global_letter, local_letter)}
+      </div>
+    `,
 
-        on_finish: function (data) {
+    choices: letter_set.map(l => l.toUpperCase()),
 
-          const set = letter_set;
+    button_html: `
+      <button class="jspsych-btn" style="
+        font-size:28px;
+        width:120px;
+        height:80px;
+        margin:10px;
+      ">%choice%</button>
+    `,
 
-          const correctAnswer =
-            data.task === "global"
-              ? data.global_letter
-              : data.local_letter;
+    response_ends_trial: true,
+    trial_duration: 1500,
 
-          let resp = typeof data.response === "number"
-            ? set[data.response]
-            : data.response;
+    data: {
+      block: block_type,
+      trial: i + 1,
+      condition,
+      task,
+      global_letter,
+      local_letter
+    },
 
-          data.correct = (resp === correctAnswer) ? 1 : 0;
-          data.response = resp || "";
-        }
-      });
+    on_finish: function (data) {
 
-    } else {
+      const set = letter_set;
 
-      // =========================
-      // DESKTOP VERSION
-      // =========================
+      const correctAnswer = data.task === "global"
+        ? data.global_letter
+        : data.local_letter;
 
-      trials.push({
-        type: "html-keyboard-response",
-        stimulus: generateNavonHTML(global_letter, local_letter),
-        choices: letter_set.map(l => l.toLowerCase()),
-        trial_duration: 1500,
-        response_ends_trial: true,
+      let resp = "";
 
-        data: {
-          block: block_type,
-          trial: i + 1,
-          condition,
-          task,
-          global_letter,
-          local_letter
-        },
+      // 🔥 drošs response handling (JSPsych mobile bieži dod string vai index)
+      if (typeof data.response === "number") {
+        resp = set[data.response];
+      } else if (typeof data.response === "string") {
+        resp = data.response;
+      }
 
-        on_finish: function (data) {
+      resp = resp || "";
 
-          const correctAnswer =
-            data.task === "global"
-              ? data.global_letter.toLowerCase()
-              : data.local_letter.toLowerCase();
-
-          data.correct =
-            (data.response?.toLowerCase() === correctAnswer) ? 1 : 0;
-        }
-      });
+      data.response = resp;
+      data.correct = resp === correctAnswer ? 1 : 0;
     }
+  });
+
+} else {
+
+  // =========================
+  // DESKTOP VERSION
+  // =========================
+
+  trials.push({
+    type: "html-keyboard-response",
+
+    stimulus: generateNavonHTML(global_letter, local_letter),
+
+    choices: letter_set.map(l => l.toLowerCase()),
+
+    trial_duration: 1500,
+    response_ends_trial: true,
+
+    data: {
+      block: block_type,
+      trial: i + 1,
+      condition,
+      task,
+      global_letter,
+      local_letter
+    },
+
+    on_finish: function (data) {
+
+      const correctAnswer =
+        data.task === "global"
+          ? data.global_letter.toLowerCase()
+          : data.local_letter.toLowerCase();
+
+      const resp = data.response ? data.response.toLowerCase() : "";
+
+      data.correct = (resp === correctAnswer) ? 1 : 0;
+    }
+  });
+}
+
+    
   }
 
   return trials;
