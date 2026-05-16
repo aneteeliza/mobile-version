@@ -226,15 +226,15 @@ function generateNavonHTML(global_letter, local_letter){
       });
     }
 
-    // =========================
-    // MOBILE VERSION (BUTTONS)
-    // =========================
-    if (DEVICE === "mobile" || DEVICE === "tablet") {
+// =========================
+// MOBILE VERSION (BUTTONS)
+// =========================
+if (DEVICE === "mobile" || DEVICE === "tablet") {
 
-      if (!letter_set) {
-  console.error("letter_set is undefined in block:", block_type);
-  letter_set = LETTER_SETS.letters; // fallback, lai nesabrūk
-}
+  if (!letter_set) {
+    console.error("letter_set is undefined in block:", block_type);
+    letter_set = LETTER_SETS.letters; // fallback
+  }
 
   trials.push({
     type: "html-button-response",
@@ -270,38 +270,40 @@ function generateNavonHTML(global_letter, local_letter){
 
     on_finish: function(data) {
 
-  try {
+      try {
 
-    const correctAnswer =
-      (data.task === "global")
-        ? data.global_letter
-        : data.local_letter;
+        const correctAnswer =
+          (data.task === "global")
+            ? data.global_letter
+            : data.local_letter;
 
-    let resp = null;
+        let resp = null;
 
-    if (typeof data.response === "number") {
-      resp = letter_set?.[data.response];
-    } 
-    else if (typeof data.response === "string") {
-      resp = data.response;
+        if (typeof data.response === "number") {
+          resp = letter_set?.[data.response];
+        } 
+        else if (typeof data.response === "string") {
+          resp = data.response;
+        }
+
+        if (!resp || !correctAnswer) {
+          data.correct = 0;
+          data.response = "";
+          return;
+        }
+
+        data.response = resp;
+        data.correct = (resp === correctAnswer) ? 1 : 0;
+
+      } catch (e) {
+        console.error("ERROR on_finish:", e);
+        data.correct = 0;
+        data.response = "";
+      }
     }
+  });
 
-    if (!resp || !correctAnswer) {
-      data.correct = 0;
-      data.response = "";
-      return;
-    }
-
-    data.response = resp;
-    data.correct = (resp === correctAnswer) ? 1 : 0;
-
-  } catch (e) {
-    console.error("ERROR on_finish:", e);
-    data.correct = 0;
-    data.response = "";
-  }
 }
-
       
     // =========================
     // DESKTOP VERSION (KEYBOARD)
