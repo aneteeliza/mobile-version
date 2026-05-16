@@ -165,6 +165,8 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
 
     const correctAnswer = (task === "global") ? global_letter.toLowerCase() : local_letter.toLowerCase();
 
+    const choicesArray = formattedChoices;
+
     trials.push({
       type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
       stimulus: generateNavonHTML(global_letter, local_letter),
@@ -178,19 +180,18 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         task: task,
         global_letter: global_letter,
         local_letter: local_letter,
-        target_char: correctAnswer,
-        choices_array: formattedChoices
+        target_char: correctAnswer
       },
       on_finish: function(data){
   const target = String(data.target_char || "").toLowerCase();
   let chosenLetter = "";
 
   if (IS_MOBILE) {
-    const idx = data.button_pressed;
+    const idx = parseInt(data.button_pressed, 10);
 
-    if (idx !== null && idx !== undefined && idx !== "") {
+    if (!isNaN(idx)) {
       chosenLetter = String(
-        data.choices_array[Number(idx)] || ""
+        choicesArray[idx] || ""
       ).toLowerCase();
     }
   } else {
@@ -198,12 +199,7 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
   }
 
   data.response = chosenLetter;
-
-  if (chosenLetter === "") {
-    data.correct = 0;
-  } else {
-    data.correct = (chosenLetter === target) ? 1 : 0;
-  }
+  data.correct = (chosenLetter === target) ? 1 : 0;
 }
     });
   }
