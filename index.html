@@ -165,14 +165,13 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
       });
     }
 
-    // Fixed dynamic baseline reference bug here (task instead of non-existent data.task reference)
     const correctAnswer = (task === "global") ? global_letter.toLowerCase() : local_letter.toLowerCase();
 
     trials.push({
       type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
       stimulus: generateNavonHTML(global_letter, local_letter),
-      choices: formattedChoices,
-      button_html: IS_MOBILE ? '<button class="jspsych-btn" data-choice="%choice%">%choice%</button>' : undefined,
+      // Fix 1: Enforce clean index matching arrays [0, 1] on mobile to block internal engine loops
+      choices: IS_MOBILE ? formattedChoices : formattedChoices,
       trial_duration: 1800,
       data: {
         block: block_type,
@@ -185,43 +184,30 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         target_char: correctAnswer
       },
       on_finish: function(data){
+        const correctAnswer = data.target_char;
+        let chosenLetter = "";
+
+        // Fix 2: Bulletproof, deterministic mapping via array tracking
         if (IS_MOBILE) {
-          if (data.button_pressed === null || data.button_pressed === undefined || data.button_pressed === -1) {
-            data.correct = 0;
-            data.response = "";
+          const index = data.button_pressed;
+          if (index === null || index === undefined || index === -1) {
+            chosenLetter = "";
           } else {
-            let chosenLetter = "";
-            try {
-              const buttons = document.querySelectorAll(".jspsych-btn");
-              if(buttons && buttons[data.button_pressed]) {
-                chosenLetter = buttons[data.button_pressed].innerText.trim().toLowerCase();
-              } else {
-                chosenLetter = formattedChoices[data.button_pressed] || "";
-              }
-            } catch(e) {
-              chosenLetter = formattedChoices[data.button_pressed] || "";
-            }
-            data.response = chosenLetter;
-            
-            // Applied unified scoring constraint here
-            data.correct = (chosenLetter === data.target_char) ? 1 : 0;
+            chosenLetter = formattedChoices[index];
           }
+          data.response = chosenLetter;
+          data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
         } else {
-          if (!data.response) {
-            data.correct = 0;
-            data.response = "";
-          } else {
-            data.correct = (data.response.toLowerCase() === data.target_char) ? 1 : 0;
-          }
+          chosenLetter = (data.response || "").toLowerCase();
+          data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
         }
         
         console.log({
           trial: data.trial,
-          block: data.block,
-          pressed_index: data.button_pressed,
-          computed_response: data.response,
-          target_expected: data.target_char,
-          is_correct: data.correct
+          pressed: data.button_pressed,
+          response: data.response,
+          expected: correctAnswer,
+          correct: data.correct
         });
       }
     });
