@@ -91,3 +91,32 @@ input[type="number"]:focus {
 .jspsych-content {
   max-width: 100%;
 }
+
+.mobile-buttons {
+    position: fixed;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    z-index: 9999;
+  }
+
+  .mobile-btn {
+    font-size: 32px;
+    width: 80px;
+    height: 80px;
+    border-radius: 16px;
+    border: none;
+    background: white;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+
+  .mobile-btn:active {
+    transform: scale(0.95);
+    background: #ccc;
+  }
