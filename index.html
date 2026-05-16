@@ -203,7 +203,8 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         condition: condition,
         task: task,
         global_letter: global_letter,
-        local_letter: local_letter
+        local_letter: local_letter,
+        valid_set: letter_set // FIXED: Store the mapping directly in the data to preserve context
       },
       on_finish: function(data){
         const correctAnswer =
@@ -216,8 +217,9 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
             data.correct = 0;
             data.response = "";
           } else {
-            // FIXED: Evaluates based on dynamic input letter_set, not hardcoded value
-            const chosenLetter = letter_set[data.button_pressed].toLowerCase();
+            // FIXED: Using securely bound valid_set context safely
+            const currentSet = data.valid_set || letter_set;
+            const chosenLetter = currentSet[data.button_pressed].toLowerCase();
             data.response = chosenLetter;
             data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
           }
@@ -356,14 +358,12 @@ timeline.push({
   data: {ignore:true}
 });
 
+// FIXED: This function mapping now transfers data properly without scoping issues
 function createPracticeBlock(blockName, nTrials){
-  return createTrials(blockName, nTrials, blockName, LETTER_SETS.letters).map(t => ({
-    ...t,
-    data: {
-      ...t.data,
-      practice: true
-    }
-  }));
+  return createTrials(blockName, nTrials, blockName, LETTER_SETS.letters).map(t => {
+    t.data.practice = true;
+    return t;
+  });
 }
 
 timeline.push({
@@ -701,7 +701,6 @@ timeline.push({
 timeline.push({
   type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
   stimulus: function () {
-    // FIXED: Broaden query search rules to extract correctly processed properties cleanly
     const trials = jsPsych.data.get()
       .filterCustom(d => (d.block !== undefined) && !d.ignore && !d.practice);
 
