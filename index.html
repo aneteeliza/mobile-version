@@ -1,203 +1,236 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Navon Task Mobile + Desktop</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Navon Task - jsPsych</title>
+  <link href="https://unpkg.com/jspsych@6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: monospace;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    .navon-letter {
+      font-size: 28px;
+      font-family: monospace;
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      text-align: center;
+      opacity: 0;
+      animation: fadein 0.2s forwards;
+    }
 
-<link href="https://unpkg.com/jspsych@6.3.1/css/jspsych.css" rel="stylesheet">
+    @keyframes fadein {
+      from { opacity: 0; transform: scale(0.5); }
+      to { opacity: 1; transform: scale(1); }
+    }
 
-<style>
-body {
-  background:black;
-  color:white;
-  font-family: monospace;
-  text-align:center;
-  margin:0;
-  padding:0;
-}
-
-.card {
-  max-width:800px;
-  margin:auto;
-  padding:20px;
-}
-
-.navon-letter {
-  display:inline-block;
-  width:28px;
-  height:28px;
-  font-size:28px;
-  opacity:0;
-  animation:fadein 0.2s forwards;
-}
-
-@keyframes fadein {
-  from {opacity:0; transform:scale(0.5);}
-  to {opacity:1; transform:scale(1);}
-}
-
-/* MOBILE scaling */
-.mobile .navon-letter {
-  font-size:18px;
-  width:18px;
-  height:18px;
-}
-
-button.touch-btn {
-  font-size:28px;
-  padding:20px 30px;
-  margin:10px;
-  border:none;
-  border-radius:12px;
-  background:#222;
-  color:white;
-}
-</style>
+    /* Mobile Responsive Adjustments for buttons */
+    .jspsych-btn {
+      background-color: #333 !important;
+      color: white !important;
+      border: 2px solid white !important;
+      font-size: 24px !important;
+      padding: 15px 30px !important;
+      margin: 10px !important;
+      font-family: monospace !important;
+    }
+  </style>
 </head>
-
 <body>
 
 <script src="https://unpkg.com/jspsych@6.3.1/jspsych.js"></script>
 <script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-keyboard-response.js"></script>
+<!-- Added HTML Button response plugin for mobile users -->
+<script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-html-button-response.js"></script>
+<script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-survey-text.js"></script>
+<script src="https://unpkg.com/jspsych@6.3.1/plugins/jspsych-survey-html-form.js"></script>
 
 <script>
 
-// ================= DEVICE =================
-const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-document.body.classList.add(isMobile ? "mobile" : "desktop");
+const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbyM_qyWU6VZw9p7EtBQcv_pWYGpJgdZ44KBfz2fsDj_-kGOS6aT1Fphy0eBXGNNQk6D/exec";
 
-const PARTICIPANT_ID = "NAVON-" + Math.random().toString(36).substring(2,8).toUpperCase();
+function generateParticipantID() {
+  return "NAVON-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+const PARTICIPANT_ID = generateParticipantID();
+const TIMESTAMP = new Date().toISOString();
 
-// ================= SETUP =================
-const GRID_SIZE = 9;
-const LETTERS = {
-  letters: ["H","S"],
-  numbers: ["2","3"]
+function getDeviceType() {
+  const ua = navigator.userAgent;
+  if (/tablet/i.test(ua)) return "tablet";
+  if (/mobile/i.test(ua)) return "mobile";
+  return "desktop";
+}
+
+const DEVICE = getDeviceType();
+const IS_MOBILE = DEVICE === "mobile" || DEVICE === "tablet";
+
+jsPsych.data.addProperties({
+  participant_id: PARTICIPANT_ID,
+  timestamp: TIMESTAMP,
+  device: DEVICE
+});
+
+const N_TRIALS_GLOBAL = 20;
+const N_TRIALS_LOCAL  = 20;
+const N_TRIALS_MIXED  = 40;
+const GLOBAL_LETTERS_SET_1 = ["H", "S"];
+const GLOBAL_LETTERS_SET_2 = ["2", "3"];
+const LETTER_SETS = {
+  letters: ["H", "S"],
+  numbers: ["2", "3"]
 };
+const GRID_SIZE = 9;
 
 const TEMPLATES = {
-"H":[
-[1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1],
-[1,1,1,1,1,1,1,1,1],
-[1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1]
+  "H":[
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,1,1,1,1,1,1,1,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1]
+  ],
+  "S":[
+    [0,1,1,1,1,1,1,1,0],
+    [1,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,0],
+    [0,1,0,0,0,0,0,0,0],
+    [0,0,1,1,1,1,1,0,0],
+    [0,0,0,0,0,0,0,1,0],
+    [0,0,0,0,0,0,0,0,1],
+    [1,0,0,0,0,0,0,0,1],
+    [0,1,1,1,1,1,1,1,0]
+  ],
+  "2":[
+  [0,1,1,1,1,1,1,1,0],
+  [1,0,0,0,0,0,0,0,1],
+  [0,0,0,0,0,0,0,1,0],
+  [0,0,0,0,0,1,0,0,0],
+  [0,0,0,0,1,0,0,0,0],
+  [0,0,0,1,0,0,0,0,0],
+  [0,0,1,0,0,0,0,0,0],
+  [1,0,0,0,0,0,0,0,0],
+  [1,1,1,1,1,1,1,1,1]
 ],
-"S":[ /* same as yours */ 
-[0,1,1,1,1,1,1,1,0],
-[1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0],
-[0,1,0,0,0,0,0,0,0],
-[0,0,1,1,1,1,1,0,0],
-[0,0,0,0,0,0,0,1,0],
-[0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1],
-[0,1,1,1,1,1,1,1,0]
+"3":[
+  [0,1,1,1,1,1,1,1,0],
+  [1,0,0,0,0,0,0,0,1],
+  [0,0,0,0,0,0,0,0,1],
+  [0,0,0,0,0,0,0,0,1],
+  [0,0,0,1,1,1,1,1,0],
+  [0,0,0,0,0,0,0,0,1],
+  [0,0,0,0,0,0,0,0,1],
+  [1,0,0,0,0,0,0,0,1],
+  [0,1,1,1,1,1,1,1,0]
 ]
 };
 
-// ================= NAVON =================
-function makeStimulus(global, local){
-  const t = TEMPLATES[global];
-  let html = "<div>";
+function generateNavonHTML(global_letter, local_letter){
+  let html = '<div style="display:inline-block; margin-bottom: 20px;">';
+  const template = TEMPLATES[global_letter];
+  const colors = ["white", "yellow", "cyan", "magenta", "lime"];
 
-  for(let r=0;r<GRID_SIZE;r++){
-    html += "<div>";
-    for(let c=0;c<GRID_SIZE;c++){
-      html += t[r][c]
-        ? `<span class="navon-letter">${local}</span>`
-        : `<span class="navon-letter">&nbsp;</span>`;
+  for(let r=0; r<GRID_SIZE; r++){
+    html += '<div>';
+    for(let c=0; c<GRID_SIZE; c++){
+      if(template[r][c] === 1){
+        const color = colors[Math.floor(Math.random()*colors.length)];
+        html += `<span class="navon-letter" style="color:${color}">${local_letter}</span>`;
+      } else {
+        html += `<span class="navon-letter">&nbsp;</span>`;
+      }
     }
-    html += "</div>";
+    html += '</div>';
   }
-  html += "</div>";
+  html += '</div>';
   return html;
 }
 
-// ================= TOUCH =================
-function touchButtons(options, correct) {
-  return new Promise(resolve => {
-
-    const wrap = document.createElement("div");
-    wrap.style.position="fixed";
-    wrap.style.bottom="30px";
-    wrap.style.left="0";
-    wrap.style.right="0";
-    wrap.style.display="flex";
-    wrap.style.justifyContent="center";
-
-    options.forEach(o => {
-      const b = document.createElement("button");
-      b.className="touch-btn";
-      b.innerText=o;
-
-      b.onclick=()=>{
-        document.body.removeChild(wrap);
-        resolve(o);
-      };
-
-      wrap.appendChild(b);
-    });
-
-    document.body.appendChild(wrap);
-  });
-}
-
-// ================= TRIALS =================
-function createTrials(block, n, set){
-
+function createTrials(block_type, n_trials, fixed_task=null, letter_set){
   const trials = [];
 
-  for(let i=0;i<n;i++){
-
-    const task = (block==="mixed")
-      ? (Math.random()<0.5?"global":"local")
-      : (block === "local" ? "local" : "global");
-
-    const condition = Math.random()<0.5?"congruent":"incongruent";
-
-    let g,l;
-
-    if(condition==="congruent"){
-      g=l=set[Math.floor(Math.random()*set.length)];
+  for(let i=0; i<n_trials; i++){
+    let task;
+    if (block_type === "mixed") {
+      task = Math.random() < 0.5 ? "global" : "local";
     } else {
-      const s=[...set].sort(()=>Math.random()-0.5);
-      g=s[0]; l=s[1];
+      task = fixed_task ?? block_type;
     }
 
+    let condition = Math.random()<0.5 ? "congruent" : "incongruent";
+    let global_letter, local_letter;
+
+    if(condition==="congruent"){
+      global_letter = local_letter = letter_set[Math.floor(Math.random()*2)];
+    } else {
+      const shuffled = [...letter_set].sort(()=>Math.random()-0.5);
+      global_letter = shuffled[0];
+      local_letter  = shuffled[1];
+    }
+
+    if(block_type==="mixed"){
+      const cue = task==="global" ? "↑" : "↓";
+      trials.push({
+        type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+        stimulus: `<div style="font-size:80px; color:yellow;">${cue}</div>`,
+        choices: IS_MOBILE ? [] : jsPsych.NO_KEYS,
+        button_html: IS_MOBILE ? '' : undefined,
+        trial_duration: 700,
+        data: {ignore:true}
+      });
+    }
+
+    // Determine target characters for mobile buttons or keyboard layout
+    const formattedChoices = letter_set.map(l => l.toLowerCase());
+
     trials.push({
-      type:"html-keyboard-response",
-      stimulus: makeStimulus(g,l),
-
-      choices: isMobile ? jsPsych.NO_KEYS : set.map(x=>x.toLowerCase()),
-      trial_duration:1500,
-
-      data:{block,task,global:g,local:l,condition},
-
-      async on_start(trial){
-
-        if(isMobile){
-
-          const correct = (task==="global"?g:l);
-          const resp = await touchButtons(set);
-
-          trial.data.response = resp;
-          trial.data.correct = (resp.toLowerCase()===correct.toLowerCase())?1:0;
-
-          jsPsych.finishTrial(trial.data);
-        }
+      type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+      stimulus: generateNavonHTML(global_letter, local_letter),
+      choices: IS_MOBILE ? letter_set : formattedChoices,
+      trial_duration: 1500,
+      data: {
+        block: block_type,
+        trial: i+1,
+        condition: condition,
+        task: task,
+        global_letter: global_letter,
+        local_letter: local_letter
       },
+      on_finish: function(data){
+        const correctAnswer =
+          (data.task === "global")
+            ? data.global_letter?.toLowerCase()
+            : data.local_letter?.toLowerCase();
 
-      on_finish:function(d){
-        if(!isMobile){
-          const correct = (d.task==="global"?d.global:d.local).toLowerCase();
-          d.correct = d.response
-            ? (d.response.toLowerCase()===correct?1:0)
-            : 0;
+        if (IS_MOBILE) {
+          // In html-button-response, response is the numeric index of the clicked button
+          if (data.button_pressed === null || data.button_pressed === undefined || data.button_pressed === -1) {
+            data.correct = 0;
+            data.response = "";
+          } else {
+            const chosenLetter = letter_set[data.button_pressed].toLowerCase();
+            data.response = chosenLetter;
+            data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
+          }
+        } else {
+          // Desktop handling
+          if (!data.response) {
+            data.correct = 0;
+            data.response = "";
+          } else {
+            data.correct = (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
+          }
         }
       }
     });
@@ -206,64 +239,533 @@ function createTrials(block, n, set){
   return trials;
 }
 
-// ================= TIMELINE =================
-let timeline=[];
+function saveData() {
+  const columns = [
+    "participant_id",
+    "timestamp",
+    "device",
+    "age",
+    "gender",
+    "employment_status",
+    "industry",
+    "position",
+    "occupation",
+    "gaming",
+    "block",
+    "trial",
+    "condition",
+    "task",
+    "global_letter",
+    "local_letter",
+    "response",
+    "correct",
+    "rt"
+  ];
+
+  const rows = jsPsych.data.get()
+          .filterCustom(d => 
+            (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") &&
+            !d.ignore &&
+            !d.practice
+          )
+          .values()
+          .map(r => {
+            let obj = {};
+            columns.forEach(c => obj[c] = r[c] ?? "");
+            return obj;
+          });
+
+  fetch(GOOGLE_SHEETS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain"
+    },
+    body: JSON.stringify(rows)
+  }).then(() => {
+    console.log("Data sent to sheet");
+  }).catch(error => {
+    console.error("Error sending data:", error);
+  });
+}
+
+let timeline = [];
+
+// Helper text function based on device type
+function hintText(desktopHint, mobileHint) {
+  return IS_MOBILE ? mobileHint : desktopHint;
+}
 
 timeline.push({
-  type:"html-keyboard-response",
-  stimulus:`<div class="card"><h2>Navon Task</h2><p>SPACE</p></div>`,
-  choices:[" "]
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2>Sveiki!</h2>
+      <p>Šis ir uzmanības un reakcijas laika eksperiments (Neivona uzdevums).</p>
+      <p>Tests aizņems 5-10 minūtes.</p>
+      <p>Pārliecinies, ka atrodies mierīgā vidē un Tev netiks novērsta uzmanība.</p>
+      <p>Tavs uzdevums būs reaģēt pēc iespējas ātrāk un precīzāk uz redzamajiem stimuliem.</p>
+      <p>Dažos blokos Tev būs jākoncentrējas uz lielo burtu vai ciparu, citos - uz mazajiem burtiem/cipariem.</p>
+      ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai turpinātu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Turpināt"] : [" "],
+  data: { ignore: true }
 });
 
-// GLOBAL H/S
 timeline.push({
-  type:"html-keyboard-response",
-  stimulus:`<div class="card"><h2>Global H/S</h2></div>`,
-  choices:[" "]
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h3>Kā izskatās uzdevums?</h3>
+      <p>Tu redzēsi lielu burtu/ciparu, kas veidots no daudziem maziem burtiem/cipariem.</p>
+      <p><b>Lielais burts/cipars</b> = visa forma (piemēram, liels H vai S)</p>
+      <p><b>Mazie burti/cipari</b> = sīkie burtiņi vai cipari, no kuriem sastāv lielais burts vai cipars</p>
+      <hr>
+      <p><b>Globālais līmenis</b> = lielais burts/cipars (kopējā forma)</p>
+      <p><b>Lokālais līmenis</b> = mazie burti/cipari</p>
+      ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai turpinātu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Turpināt"] : [" "],
+  data: { ignore: true }
 });
-timeline.push(...createTrials("global",10,LETTERS.letters));
 
-// LOCAL H/S
 timeline.push({
-  type:"html-keyboard-response",
-  stimulus:`<div class="card"><h2>Local H/S</h2></div>`,
-  choices:[" "]
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h3>Tavs uzdevums</h3>
+      <p>${hintText("Spied attiecīgā burta vai cipara taustiņu.", "Spied attiecīgo ekrāna pogu burtam vai ciparam.")}</p>
+      <p>Piemēram, spied <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.</p>
+      <p>Atbildi pēc iespējas ātri (maksimālais laiks: 1,5 sekundes).</p>
+      ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: { ignore: true }
 });
-timeline.push(...createTrials("local",10,LETTERS.letters));
 
-// GLOBAL 2/3
 timeline.push({
-  type:"html-keyboard-response",
-  stimulus:`<div class="card"><h2>Global 2/3</h2></div>`,
-  choices:[" "]
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+  <div class="card">
+    <h2>Neivona uzdevums</h2>
+    <p>Vēro stimulu, kas parādīsies uz ekrāna.</p>
+    <p>${hintText("Spied attiecīgā burta vai cipara taustiņu uz tastatūras.", "Spied attiecīgo burtu vai ciparu uz ekrāna.")}</p>
+    <p>Atbildes jāsniedz ātri, jo limits ir 1,5 sekundes.</p>
+    ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai sāktu eksperimentu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt eksperimentu"] : [" "],
+  data: {ignore:true}
 });
-timeline.push(...createTrials("global",10,LETTERS.numbers));
 
-// LOCAL 2/3
+function createPracticeBlock(blockName, nTrials){
+  return createTrials(blockName, nTrials, blockName, LETTER_SETS.letters).map(t => ({
+    ...t,
+    data: {
+      ...t.data,
+      practice: true
+    },
+    on_finish: function(data){
+      const correctAnswer =
+        (data.task === "global")
+          ? data.global_letter?.toLowerCase()
+          : data.local_letter?.toLowerCase();
+
+      if (IS_MOBILE) {
+        if (data.button_pressed === null || data.button_pressed === undefined || data.button_pressed === -1) {
+          data.correct = 0;
+          data.response = "";
+        } else {
+          const chosenLetter = LETTER_SETS.letters[data.button_pressed].toLowerCase();
+          data.response = chosenLetter;
+          data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
+        }
+      } else {
+        if (!data.response) {
+          data.correct = 0;
+          data.response = "";
+        } else {
+          data.correct = (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
+        }
+      }
+    }
+  }));
+}
+
 timeline.push({
-  type:"html-keyboard-response",
-  stimulus:`<div class="card"><h2>Local 2/3</h2></div>`,
-  choices:[" "]
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2>Treniņš</h2>
+      <p>Mēs sāksim ar īsu izmēģinājumu katram uzdevuma tipam.</p>
+      ${IS_MOBILE ? '' : '<p>Nospied SPACE, lai sāktu.</p>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: { ignore: true }
 });
-timeline.push(...createTrials("local",10,LETTERS.numbers));
 
-// MIXED
+// GLOBAL treniņš
 timeline.push({
-  type:"html-keyboard-response",
-  stimulus:`<div class="card"><h2>Mixed</h2></div>`,
-  choices:[" "]
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `<h3>Treniņš: Globālais bloks</h3><p>Fokusējies uz LIELAJIEM burtiem.</p>${IS_MOBILE ? '' : '<p>SPACE, lai sāktu</p>'}`,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: { ignore: true }
 });
-timeline.push(...createTrials("mixed",20,LETTERS.letters));
+timeline.push(...createPracticeBlock("global", 4));
 
-// END
+// LOCAL treniņš
 timeline.push({
-  type:"html-keyboard-response",
-  stimulus:`<div class="card"><h2>Done</h2></div>`,
-  choices: jsPsych.NO_KEYS
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `<h3>Treniņš: Lokālais bloks</h3><p>Fokusējies uz MAZAJIEM burtiem.</p>${IS_MOBILE ? '' : '<p>SPACE, lai sāktu</p>'}`,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: { ignore: true }
+});
+timeline.push(...createPracticeBlock("local", 4));
+
+// MIXED treniņš
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `<h3>Treniņš: Jauktais bloks</h3><p>↑ = globālais, ↓ = lokālais</p>${IS_MOBILE ? '' : '<p>SPACE, lai sāktu</p>'}`,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: { ignore: true }
+});
+timeline.push(...createPracticeBlock("mixed", 6));
+
+function getPracticeAccuracy(block){
+  const d = jsPsych.data.get().filter({practice: true, block: block});
+  return d.count() === 0 ? 0 : d.select("correct").mean();
+}
+
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: function(){
+    const g = getPracticeAccuracy("global");
+    const l = getPracticeAccuracy("local");
+    const m = getPracticeAccuracy("mixed");
+
+    return `
+      <div class="card">
+        <h2>Treniņa rezultāti</h2>
+        <p>Globālais: ${(g*100).toFixed(0)}%</p>
+        <p>Lokālais: ${(l*100).toFixed(0)}%</p>
+        <p>Jauktais: ${(m*100).toFixed(0)}%</p>
+        <hr>
+        ${IS_MOBILE ? '' : '<p class="hint">Nospied SPACE, lai turpinātu ar eksperimenta galveno daļu</p>'}
+      </div>
+    `;
+  },
+  choices: IS_MOBILE ? ["Turpināt"] : [" "],
+  data: { ignore: true }
 });
 
-jsPsych.init({timeline});
+// GLOBAL ar H/S
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+  <div class="card">
+    <h2>Globālais bloks</h2>
+    <p>Fokusējies uz LIELAJIEM burtiem.</p>
+    <p>Ignorē mazos burtiņus.</p>
+    <p>${hintText("Spied taustiņu <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.", "Spied pogu uz ekrāna.")}</p>
+    ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: {ignore:true}
+});
+timeline.push(...createTrials("global", N_TRIALS_GLOBAL, "global", LETTER_SETS.letters));
 
+// STIMULU MAIŅA
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
+      ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai turpinātu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Turpināt"] : [" "],
+  data: { ignore: true }
+});
+
+// GLOBAL ar 2/3
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2>Globālais bloks</h2>
+      <p>Turpmāk redzēsi ciparus <b>2</b> un <b>3</b>.</p>
+      <p>Fokusējies uz LIELAJIEM cipariem.</p>
+      <p>${hintText("Spied taustiņu <b>2</b>, ja redzi 2, un <b>3</b>, ja redzi 3.", "Spied atbilstošo cipara pogu uz ekrāna.")}</p>
+      ${IS_MOBILE ? '' : '<div class="hint">SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: {ignore:true}
+});
+timeline.push(...createTrials("global", N_TRIALS_GLOBAL, "global", LETTER_SETS.numbers));
+
+// LOCAL ar H/S
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+  <div class="card">
+    <h2>Lokālais bloks</h2>
+    <p>Fokusējies uz MAZAJIEM burtiem.</p>
+    <p>Ignorē lielos burtus.</p>
+    <p>${hintText("Spied taustiņu <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.", "Spied atbilstošo burta pogu.")}</p>
+    ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: {ignore:true}
+});
+timeline.push(...createTrials("local", N_TRIALS_LOCAL, "local", LETTER_SETS.letters));
+
+// STIMULU MAIŅA
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
+      ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai turpinātu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Turpināt"] : [" "],
+  data: { ignore: true }
+});
+
+// LOCAL ar 2/3
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2>Lokālais bloks</h2>
+      <p>Fokusējies uz MAZAJIEM cipariem.</p>
+      <p>${hintText("Spied taustiņu <b>2</b>, ja redzi 2, un <b>3</b>, ja redzi 3.", "Spied atbilstošo cipara pogu.")}</p>
+      ${IS_MOBILE ? '' : '<div class="hint">SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: {ignore:true}
+});
+timeline.push(...createTrials("local", N_TRIALS_LOCAL, "local", LETTER_SETS.numbers));
+
+
+// MIX ar H/S
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+  <div class="card">
+    <h2>Jauktais bloks</h2>
+    <p>Pirms katra uzdevuma ir bultiņa:</p>
+    <p>↑ - fokusējies uz globālo (lielo) burtu</p>
+    <p>↓ - fokusējies uz lokālo (mazo) burtu</p>
+    <p>${hintText("Spied taustiņu <b>H</b>, ja redzi burtu H, un <b>S</b>, ja redzi burtu S.", "Spied atbilstošo burta pogu.")}</p>
+    ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: {ignore:true}
+});
+timeline.push(...createTrials("mixed", N_TRIALS_MIXED, null, LETTER_SETS.letters));
+
+// STIMULU MAIŅA
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2 class="hint">Uzmanību: notiek stimulu maiņa</h2>
+      ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai turpinātu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Turpināt"] : [" "],
+  data: { ignore: true }
+});
+
+// MIX ar 2/3
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h2>Jauktais bloks</h2>
+      <p>↑ globālais, ↓ lokālais</p>
+      <p>${hintText("Spied taustiņu <b>2</b>, ja redzi 2, un <b>3</b>, ja redzi 3.", "Spied atbilstošo cipara pogu.")}</p>
+      ${IS_MOBILE ? '' : '<div class="hint">SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt"] : [" "],
+  data: {ignore:true}
+});
+timeline.push(...createTrials("mixed", N_TRIALS_MIXED, null, LETTER_SETS.numbers));
+
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: `
+    <div class="card">
+      <h3>Lūdzu, atbildi uz dažiem jautājumiem par sevi</h3>
+      ${IS_MOBILE ? '' : '<div class="hint">Nospied SPACE, lai sāktu</div>'}
+    </div>
+  `,
+  choices: IS_MOBILE ? ["Sākt aptauju"] : [" "],
+  data: { ignore: true }
+});
+
+timeline.push({
+  type: "survey-html-form",
+  html: `
+    <div class="card">
+      <p>Tavs vecums:</p>
+      <input name="age" type="number" min="1" max="99" required />
+    </div>
+  `,
+  button_label: "Turpināt",
+  on_finish: function(data){
+    const age = parseInt(data.response.age);
+    if (!isNaN(age)) {
+      jsPsych.data.addProperties({ age: age });
+    }
+  }
+});
+
+timeline.push({
+  type: "survey-html-form",
+  html: `
+    <div class="card">
+      <p>Tavs dzimums:</p>
+      <select name="gender" required>
+        <option value="">Izvēlies</option>
+        <option value="male">Vīrietis</option>
+        <option value="female">Sieviete</option>
+        <option value="other">Cits</option>
+        <option value="na">Nevēlos norādīt</option>
+      </select>
+    </div>
+  `,
+  button_label: "Turpināt",
+  on_finish: function(data){
+    jsPsych.data.addProperties({
+      gender: data.response.gender
+    });
+  }
+});
+
+timeline.push({
+  type: "survey-html-form",
+  html: `
+    <div class="card">
+      <p>Kāds ir Tavs pašreizējais nodarbošanās statuss?</p>
+      <select name="employment_status" id="employment_status" required>
+        <option value="">Izvēlies</option>
+        <option value="employed">Strādā algotu darbu</option>
+        <option value="self">Pašnodarbināts / uzņēmējs</option>
+        <option value="student">Mācies / skolēns / students</option>
+        <option value="unemployed">Meklē darbu</option>
+        <option value="parental">Bērna kopšanas atvaļinājumā</option>
+        <option value="retired">Pensionārs</option>
+        <option value="other">Cits</option>
+      </select>
+
+      <div id="industry_block" style="display:none; margin-top:15px;">
+        <p>Kādā nozarē Tu darbojies?</p>
+        <select name="industry">
+          <option value="">Izvēlies</option>
+          <option value="it">IT</option>
+          <option value="education">Izglītība</option>
+          <option value="services">Pakalpojumi</option>
+          <option value="healthcare">Veselības aprūpe</option>
+          <option value="other">Cits</option>
+        </select>
+      </div>
+    </div>
+  `,
+  button_label: "Turpināt",
+  on_load: function () {
+    const select = document.getElementById("employment_status");
+    const industryBlock = document.getElementById("industry_block");
+
+    select.addEventListener("change", function () {
+      if (this.value === "employed" || this.value === "self") {
+        industryBlock.style.display = "block";
+      } else {
+        industryBlock.style.display = "none";
+      }
+    });
+  },
+  on_finish: function(data){
+    jsPsych.data.addProperties({
+      employment_status: data.response.employment_status,
+      industry: data.response.industry || null
+    });
+  }
+});
+
+timeline.push({
+  type: "survey-html-form",
+  html: `
+    <div class="card">
+      <p>Cik bieži Tu spēlē videospēles?</p>
+      <select name="gaming" required>
+        <option value="">Izvēlies</option>
+        <option value="never">Nekad</option>
+        <option value="rare">Ļoti reti (dažas reizes gadā vai retāk)</option>
+        <option value="sometimes">Reizēm (dažas reizes mēnesī)</option>
+        <option value="often">Bieži (katru nedēļu vai biežāk)</option>
+        <option value="very_often">Ļoti bieži (gandrīz katru dienu)</option>
+      </select>
+    </div>
+  `,
+  button_label: "Pabeigt",
+  on_finish: function(data){
+    jsPsych.data.addProperties({
+      gaming: data.response.gaming
+    });
+  }
+});
+
+timeline.push({
+  type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
+  stimulus: function () {
+    const trials = jsPsych.data.get()
+      .filterCustom(d => (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") && !d.ignore && d.block && !d.practice);
+
+    function blockAccuracy(blockName) {
+      const blockTrials = trials.filter({ block: blockName });
+      if (blockTrials.count() === 0) return "—";
+      return Math.round(blockTrials.select("correct").mean() * 100) + "%";
+    }
+
+    const globalAcc = blockAccuracy("global");
+    const localAcc  = blockAccuracy("local");
+    const mixedAcc  = blockAccuracy("mixed");
+    const meanRT = Math.round(trials.filter({ correct: 1 }).select("rt").mean());
+
+    return `
+    <div class="card">
+      <h2 class="hint">Paldies par dalību!</h2>
+      <h3>Precizitāte pa blokiem</h3>
+      <p><strong>Globālais bloks:</strong> ${globalAcc}</p>
+      <p><strong>Lokālais bloks:</strong> ${localAcc}</p>
+      <p><strong>Jauktais bloks:</strong> ${mixedAcc}</p>
+      <p style="margin-top:15px;"><strong>Vidējais reakcijas laiks:</strong> ${meanRT} ms</p>
+      </div>
+    `;
+  },
+  on_load: function() {
+    saveData();
+  },
+  choices: IS_MOBILE ? [] : jsPsych.NO_KEYS,
+  button_html: IS_MOBILE ? '' : undefined,
+  data: { ignore: true }
+});
+
+jsPsych.init({
+  timeline: timeline
+});
 </script>
+
 </body>
 </html>
