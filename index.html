@@ -707,7 +707,7 @@ timeline.push({
   on_load: function() {
     saveData();
   },
-  choices: jsPsych.NO_KEYS,
+  choices: IS_MOBILE ? jsPsych.ALL_KEYS : jsPsych.NO_KEYS,
   data: { ignore: true }
 });
 
