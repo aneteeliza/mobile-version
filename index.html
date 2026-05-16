@@ -156,13 +156,14 @@ function createTrials(block, n, set){
 
     const task = (block==="mixed")
       ? (Math.random()<0.5?"global":"local")
-      : block;
+      : (block === "local" ? "local" : "global");
 
     const condition = Math.random()<0.5?"congruent":"incongruent";
 
     let g,l;
+
     if(condition==="congruent"){
-      g=l=set[Math.floor(Math.random()*2)];
+      g=l=set[Math.floor(Math.random()*set.length)];
     } else {
       const s=[...set].sort(()=>Math.random()-0.5);
       g=s[0]; l=s[1];
@@ -177,7 +178,7 @@ function createTrials(block, n, set){
 
       data:{block,task,global:g,local:l,condition},
 
-      on_start: async function(trial){
+      async on_start(trial){
 
         if(isMobile){
 
