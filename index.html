@@ -252,7 +252,7 @@ function generateNavonHTML(global_letter, local_letter){
           ">%choice%</button>
         `,
 
-        trial_duration: 1500,
+        trial_duration: null,
         response_ends_trial: true,
 
         data: {
@@ -266,18 +266,30 @@ function generateNavonHTML(global_letter, local_letter){
 
         on_finish: function(data){
 
-          const correctAnswer =
-            (data.task === "global")
-              ? data.global_letter
-              : data.local_letter;
+  const correctAnswer =
+    (data.task === "global")
+      ? data.global_letter
+      : data.local_letter;
 
-          if (data.response === null || data.response === undefined) {
-            data.correct = 0;
-            data.response = "";
-          } else {
-            data.response = letter_set[data.response];
-            data.correct = (data.response === correctAnswer) ? 1 : 0;
-          }
+  // MOBILE SAFE RESPONSE HANDLING
+  let resp = null;
+
+  if (typeof data.response === "number") {
+    resp = letter_set[data.response];
+  } 
+  else if (typeof data.response === "string") {
+    resp = data.response;
+  }
+
+  if (!resp) {
+    data.correct = 0;
+    data.response = "";
+    return;
+  }
+
+  data.response = resp;
+  data.correct = (resp === correctAnswer) ? 1 : 0;
+}
         }
       });
 
