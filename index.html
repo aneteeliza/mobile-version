@@ -165,17 +165,18 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
       });
     }
 
+    // Fixed dynamic baseline reference bug here (task instead of non-existent data.task reference)
     const correctAnswer = (task === "global") ? global_letter.toLowerCase() : local_letter.toLowerCase();
 
     trials.push({
       type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
       stimulus: generateNavonHTML(global_letter, local_letter),
-      // Fix 1: Ensure choices are clean lower-case matches everywhere to simplify decoding
       choices: formattedChoices,
       button_html: IS_MOBILE ? '<button class="jspsych-btn" data-choice="%choice%">%choice%</button>' : undefined,
-      trial_duration: 1800, // Fix 2: Added structural buffer for mobile touch latency
+      trial_duration: 1800,
       data: {
         block: block_type,
+        stimulus_set: letter_set,
         trial: i+1,
         condition: condition,
         task: task,
@@ -189,22 +190,21 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
             data.correct = 0;
             data.response = "";
           } else {
-            // Fix 3: Read the exact DOM label inner text directly to survive frame-shifts or flipping layout order
+            let chosenLetter = "";
             try {
               const buttons = document.querySelectorAll(".jspsych-btn");
               if(buttons && buttons[data.button_pressed]) {
-                const chosenLetter = buttons[data.button_pressed].innerText.trim().toLowerCase();
-                data.response = chosenLetter;
-                data.correct = (chosenLetter === data.target_char) ? 1 : 0;
+                chosenLetter = buttons[data.button_pressed].innerText.trim().toLowerCase();
               } else {
-                // Fallback in case DOM cleared before access
-                data.response = formattedChoices[data.button_pressed] || "";
-                data.correct = (data.response === data.target_char) ? 1 : 0;
+                chosenLetter = formattedChoices[data.button_pressed] || "";
               }
             } catch(e) {
-              data.response = formattedChoices[data.button_pressed] || "";
-              data.correct = (data.response === data.target_char) ? 1 : 0;
+              chosenLetter = formattedChoices[data.button_pressed] || "";
             }
+            data.response = chosenLetter;
+            
+            // Applied unified scoring constraint here
+            data.correct = (chosenLetter === data.target_char) ? 1 : 0;
           }
         } else {
           if (!data.response) {
@@ -215,7 +215,6 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
           }
         }
         
-        // Console logging tracker as suggested to explicitly confirm accurate translation on devices
         console.log({
           trial: data.trial,
           block: data.block,
