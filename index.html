@@ -557,7 +557,7 @@ timeline.push(
 );
 timeline.push(...createTrials("mixed", N_TRIALS_MIXED, null, LETTER_SETS.numbers));
 
-// --- SURVEY INTRO SCREEN (Cross-platform optimized) ---
+// --- SURVEY INTRO SCREEN ---
 timeline.push(
   IS_MOBILE
     ? {
@@ -569,7 +569,7 @@ timeline.push(
           </div>
         `,
         choices: ["SĀKT"],
-        button_html: `<button class="jspsych-btn mobile-btn" style="margin-top:20px;">%choice%</button>`,
+        button_html: `<button class="jspsych-btn mobile-btn">%choice%</button>`,
         data: { ignore: true }
       }
     : {
@@ -585,35 +585,44 @@ timeline.push(
       }
 );
 
-// --- AGE QUESTION (Numerical input + Form fix) ---
+// --- AGE QUESTION ---
 timeline.push({
   type: "survey-html-form",
   html: `
-    <form id="age-form">
-      <div class="card">
-        <p>Tavs vecums:</p>
-        <input 
-          name="age" 
-          type="number" 
-          min="1" 
-          max="99" 
-          inputmode="numeric" 
-          pattern="[0-9]*" 
-          placeholder="piem. 25" 
-          style="font-size: 18px !important; padding: 10px; text-align: center;" 
-          required 
-        />
-      </div>
-    </form>
+    <div class="card">
+      <p>Tavs vecums:</p>
+
+      <input
+        name="age"
+        type="number"
+        min="1"
+        max="99"
+        required
+        inputmode="numeric"
+        placeholder="piem. 25"
+        style="
+          font-size:18px;
+          padding:12px;
+          width:80%;
+          max-width:250px;
+          text-align:center;
+        "
+      />
+    </div>
   `,
   button_label: "Turpināt",
   on_finish: function(data){
-    if (data.responses) {
+    try {
       const res = JSON.parse(data.responses);
-      const age = parseInt(res.age, 10);
+      const age = parseInt(res.age);
+
       if (!isNaN(age)) {
-        jsPsych.data.addProperties({ age: age });
+        jsPsych.data.addProperties({
+          age: age
+        });
       }
+    } catch(e){
+      console.error(e);
     }
   }
 });
@@ -622,24 +631,28 @@ timeline.push({
 timeline.push({
   type: "survey-html-form",
   html: `
-    <form id="gender-form">
-      <div class="card">
-        <p>Tavs dzimums:</p>
-        <select name="gender" required>
-          <option value="">Izvēlies</option>
-          <option value="male">Vīrietis</option>
-          <option value="female">Sieviete</option>
-          <option value="other">Cits</option>
-          <option value="na">Nevēlos norādīt</option>
-        </select>
-      </div>
-    </form>
+    <div class="card">
+      <p>Tavs dzimums:</p>
+
+      <select name="gender" required>
+        <option value="">Izvēlies</option>
+        <option value="male">Vīrietis</option>
+        <option value="female">Sieviete</option>
+        <option value="other">Cits</option>
+        <option value="na">Nevēlos norādīt</option>
+      </select>
+    </div>
   `,
   button_label: "Turpināt",
   on_finish: function(data){
-    if (data.responses) {
+    try {
       const res = JSON.parse(data.responses);
-      jsPsych.data.addProperties({ gender: res.gender });
+
+      jsPsych.data.addProperties({
+        gender: res.gender
+      });
+    } catch(e){
+      console.error(e);
     }
   }
 });
@@ -648,56 +661,75 @@ timeline.push({
 timeline.push({
   type: "survey-html-form",
   html: `
-    <form id="employment-form">
-      <div class="card">
-        <p>Kāds ir Tavs pašreizējais nodarbošanās statuss?</p>
-        <select name="employment_status" id="employment_status" required>
+    <div class="card">
+
+      <p>Kāds ir Tavs pašreizējais nodarbošanās statuss?</p>
+
+      <select name="employment_status" id="employment_status" required>
+        <option value="">Izvēlies</option>
+        <option value="employed">Strādā algotu darbu</option>
+        <option value="self">Pašnodarbināts / uzņēmējs</option>
+        <option value="student">Mācies / skolēns / students</option>
+        <option value="unemployed">Meklē darbu</option>
+        <option value="parental">Bērna kopšanas atvaļinājumā</option>
+        <option value="retired">Pensionārs</option>
+        <option value="other">Cits</option>
+      </select>
+
+      <div id="industry_block" style="display:none; margin-top:15px;">
+
+        <p>Kādā nozarē Tu darbojies?</p>
+
+        <select name="industry">
           <option value="">Izvēlies</option>
-          <option value="employed">Strādā algotu darbu</option>
-          <option value="self">Pašnodarbināts / uzņēmējs</option>
-          <option value="student">Mācies / skolēns / students</option>
-          <option value="unemployed">Meklē darbu</option>
-          <option value="parental">Bērna kopšanas atvaļinājumā</option>
-          <option value="retired">Pensionārs</option>
+          <option value="it">IT</option>
+          <option value="education">Izglītība</option>
+          <option value="services">Pakalpojumi</option>
+          <option value="healthcare">Veselības aprūpe</option>
           <option value="other">Cits</option>
         </select>
 
-        <div id="industry_block" style="display:none; margin-top:15px;">
-          <p>Kādā nozarē Tu darbojies?</p>
-          <select name="industry">
-            <option value="">Izvēlies</option>
-            <option value="it">IT</option>
-            <option value="education">Izglītība</option>
-            <option value="services">Pakalpojumi</option>
-            <option value="healthcare">Veselības aprūpe</option>
-            <option value="other">Cits</option>
-          </select>
-        </div>
       </div>
-    </form>
+
+    </div>
   `,
   button_label: "Turpināt",
+
   on_load: function () {
+
     const select = document.getElementById("employment_status");
     const industryBlock = document.getElementById("industry_block");
+
     if (select && industryBlock) {
+
       select.addEventListener("change", function () {
+
         if (this.value === "employed" || this.value === "self") {
           industryBlock.style.display = "block";
         } else {
           industryBlock.style.display = "none";
         }
+
       });
+
     }
   },
+
   on_finish: function(data){
-    if (data.responses) {
+
+    try {
+
       const res = JSON.parse(data.responses);
+
       jsPsych.data.addProperties({
         employment_status: res.employment_status,
-        industry: res.industry || null
+        industry: res.industry || ""
       });
+
+    } catch(e){
+      console.error(e);
     }
+
   }
 });
 
@@ -705,71 +737,171 @@ timeline.push({
 timeline.push({
   type: "survey-html-form",
   html: `
-    <form id="gaming-form">
-      <div class="card">
-        <p>Cik bieži Tu spēlē videospēles?</p>
-        <select name="gaming" required>
-          <option value="">Izvēlies</option>
-          <option value="never">Nekad</option>
-          <option value="rare">Ļoti reti (dažas reizes gadā vai retāk)</option>
-          <option value="sometimes">Reizēm (dažas reizes mēnesī)</option>
-          <option value="often">Bieži (katru nedēļu vai biežāk)</option>
-          <option value="very_often">Ļoti bieži (gandrīz katru dienu)</option>
-        </select>
-      </div>
-    </form>
+    <div class="card">
+
+      <p>Cik bieži Tu spēlē videospēles?</p>
+
+      <select name="gaming" required>
+        <option value="">Izvēlies</option>
+        <option value="never">Nekad</option>
+        <option value="rare">Ļoti reti</option>
+        <option value="sometimes">Reizēm</option>
+        <option value="often">Bieži</option>
+        <option value="very_often">Ļoti bieži</option>
+      </select>
+
+    </div>
   `,
   button_label: "Pabeigt",
+
   on_finish: function(data){
-    if (data.responses) {
+
+    try {
+
       const res = JSON.parse(data.responses);
-      jsPsych.data.addProperties({ gaming: res.gaming });
+
+      jsPsych.data.addProperties({
+        gaming: res.gaming
+      });
+
+    } catch(e){
+      console.error(e);
     }
+
   }
 });
 
 // --- FINAL RESULTS SCREEN ---
-timeline.push({
-  type: "html-keyboard-response",
-  stimulus: function () {
-    // Crucial: Filter for both desktop (keyboard) and mobile (button) response formats
-    const trials = jsPsych.data.get().filterCustom(d => 
-      (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") && 
-      !d.ignore && 
-      d.block && 
-      !d.practice
-    );
+timeline.push(
+  IS_MOBILE
+    ? {
+        type: "html-button-response",
 
-    function blockAccuracy(blockName) {
-      const blockTrials = trials.filter({ block: blockName });
-      if (blockTrials.count() === 0) return "—";
-      return Math.round(blockTrials.select("correct").mean() * 100) + "%";
-    }
+        stimulus: function () {
 
-    const globalAcc = blockAccuracy("global");
-    const localAcc   = blockAccuracy("local");
-    const mixedAcc   = blockAccuracy("mixed");
-    
-    const correctTrials = trials.filter({ correct: 1 });
-    const meanRT = correctTrials.count() > 0 ? Math.round(correctTrials.select("rt").mean()) : 0;
+          const trials = jsPsych.data.get().filterCustom(d =>
+            (d.trial_type === "html-keyboard-response" ||
+             d.trial_type === "html-button-response") &&
+            !d.ignore &&
+            d.block &&
+            !d.practice
+          );
 
-    return `
-    <div class="card">
-      <h2 class="hint">Paldies par dalību!</h2>
-      <h3>Precizitāte pa blokiem</h3>
-      <p><strong>Globālais bloks:</strong> ${globalAcc}</p>
-      <p><strong>Lokālais bloks:</strong> ${localAcc}</p>
-      <p><strong>Jauktais bloks:</strong> ${mixedAcc}</p>
-      <p style="margin-top:15px;"><strong>Vidējais reakcijas laiks:</strong> ${meanRT} ms</p>
-    </div>
-    `;
-  },
-  on_load: function() {
-    saveData();
-  },
-  choices: jsPsych.NO_KEYS,
-  data: { ignore: true }
-});
+          function blockAccuracy(blockName) {
+            const blockTrials = trials.filter({ block: blockName });
+
+            if (blockTrials.count() === 0) return "—";
+
+            return Math.round(
+              blockTrials.select("correct").mean() * 100
+            ) + "%";
+          }
+
+          const globalAcc = blockAccuracy("global");
+          const localAcc = blockAccuracy("local");
+          const mixedAcc = blockAccuracy("mixed");
+
+          const correctTrials = trials.filter({ correct: 1 });
+
+          const meanRT =
+            correctTrials.count() > 0
+              ? Math.round(correctTrials.select("rt").mean())
+              : 0;
+
+          return `
+            <div class="card">
+              <h2>Paldies par dalību!</h2>
+
+              <h3>Precizitāte pa blokiem</h3>
+
+              <p><strong>Globālais:</strong> ${globalAcc}</p>
+              <p><strong>Lokālais:</strong> ${localAcc}</p>
+              <p><strong>Jauktais:</strong> ${mixedAcc}</p>
+
+              <p style="margin-top:15px;">
+                <strong>Vidējais reakcijas laiks:</strong>
+                ${meanRT} ms
+              </p>
+            </div>
+          `;
+        },
+
+        choices: ["PABEIGT"],
+
+        button_html: `<button class="jspsych-btn mobile-btn">%choice%</button>`,
+
+        on_load: function() {
+          saveData();
+        },
+
+        data: { ignore: true }
+      }
+
+    : {
+        type: "html-keyboard-response",
+
+        stimulus: function () {
+
+          const trials = jsPsych.data.get().filterCustom(d =>
+            (d.trial_type === "html-keyboard-response" ||
+             d.trial_type === "html-button-response") &&
+            !d.ignore &&
+            d.block &&
+            !d.practice
+          );
+
+          function blockAccuracy(blockName) {
+            const blockTrials = trials.filter({ block: blockName });
+
+            if (blockTrials.count() === 0) return "—";
+
+            return Math.round(
+              blockTrials.select("correct").mean() * 100
+            ) + "%";
+          }
+
+          const globalAcc = blockAccuracy("global");
+          const localAcc = blockAccuracy("local");
+          const mixedAcc = blockAccuracy("mixed");
+
+          const correctTrials = trials.filter({ correct: 1 });
+
+          const meanRT =
+            correctTrials.count() > 0
+              ? Math.round(correctTrials.select("rt").mean())
+              : 0;
+
+          return `
+            <div class="card">
+              <h2>Paldies par dalību!</h2>
+
+              <h3>Precizitāte pa blokiem</h3>
+
+              <p><strong>Globālais:</strong> ${globalAcc}</p>
+              <p><strong>Lokālais:</strong> ${localAcc}</p>
+              <p><strong>Jauktais:</strong> ${mixedAcc}</p>
+
+              <p style="margin-top:15px;">
+                <strong>Vidējais reakcijas laiks:</strong>
+                ${meanRT} ms
+              </p>
+
+              <div class="hint">
+                Datus saglabā...
+              </div>
+            </div>
+          `;
+        },
+
+        choices: jsPsych.NO_KEYS,
+
+        on_load: function() {
+          saveData();
+        },
+
+        data: { ignore: true }
+      }
+);
 
 jsPsych.init({
   timeline: timeline
