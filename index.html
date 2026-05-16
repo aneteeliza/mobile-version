@@ -230,9 +230,8 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
   type: "html-keyboard-response",
   stimulus: generateNavonHTML(global_letter, local_letter),
   choices: letter_set.map(l => l.toLowerCase()),
-  button_html: '<button class="jspsych-btn">%choice%</button>',
   trial_duration: 1500,
-  response_ends_trial: true
+  response_ends_trial: true,
 
   on_load: function() {
     showMobileButtons(letter_set.map(l => l.toLowerCase()));
