@@ -165,9 +165,6 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
 
     const correctAnswer = (task === "global") ? global_letter.toLowerCase() : local_letter.toLowerCase();
 
-    // Store details as simple root-level arrays so jsPsych sandbox won't drop them
-    const isNumbersSet = letter_set.includes("2") || letter_set.includes("3");
-
     trials.push({
       type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
       stimulus: generateNavonHTML(global_letter, local_letter),
@@ -181,26 +178,32 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         task: task,
         global_letter: global_letter,
         local_letter: local_letter,
-        target_char: correctAnswer,
-        is_numbers: isNumbersSet
+        target_char: correctAnswer
       },
       on_finish: function(data){
-        const correctAnswer = data.target_char;
+        const target = String(data.target_char || "").toLowerCase();
         let chosenLetter = "";
 
         if (IS_MOBILE) {
           const idx = data.button_pressed;
           if (idx !== null && idx !== undefined && idx !== "") {
-            // Re-map index accurately based on simple boolean marker
-            const currentSet = data.is_numbers ? ["2", "3"] : ["h", "s"];
-            chosenLetter = currentSet[Number(idx)];
+            // Instantly look up configuration inside active runtime trial choices array
+            const trialDetails = jsPsych.currentTrial();
+            if (trialDetails && trialDetails.choices) {
+              chosenLetter = String(trialDetails.choices[Number(idx)] || "").toLowerCase();
+            }
           }
         } else {
           chosenLetter = String(data.response || "").toLowerCase();
         }
 
         data.response = chosenLetter;
-        data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
+        
+        if (chosenLetter === "") {
+          data.correct = 0; 
+        } else {
+          data.correct = (chosenLetter === target) ? 1 : 0;
+        }
       }
     });
   }
@@ -300,7 +303,6 @@ timeline.push({
 });
 timeline.push(...createPracticeBlock("mixed", 6));
 
-// SAFE CALCULATOR: Sweeps the raw database directly to bypass sandbox properties dropping out
 function getAccuracyPercentage(blockName, isPracticeBlock) {
   const allTrials = jsPsych.data.get().values();
   let correctCount = 0;
@@ -309,7 +311,6 @@ function getAccuracyPercentage(blockName, isPracticeBlock) {
   for (let i = 0; i < allTrials.length; i++) {
     const t = allTrials[i];
     
-    // Explicitly target user response blocks containing performance flags
     if (t.block === blockName && !t.ignore) {
       const matchPractice = isPracticeBlock ? (t.practice === true) : (!t.practice);
       
