@@ -612,19 +612,22 @@ timeline.push({
   `,
   button_label: "Turpināt",
   on_finish: function(data){
-    try {
-      const res = JSON.parse(data.responses);
-      const age = parseInt(res.age);
 
-      if (!isNaN(age)) {
-        jsPsych.data.addProperties({
-          age: age
-        });
-      }
-    } catch(e){
-      console.error(e);
+  const res = data.response;
+
+  if(res && res.age){
+
+    const age = parseInt(res.age);
+
+    if(!isNaN(age)){
+      jsPsych.data.addProperties({
+        age: age
+      });
     }
+
   }
+
+}
 });
 
 // --- GENDER QUESTION ---
@@ -645,16 +648,18 @@ timeline.push({
   `,
   button_label: "Turpināt",
   on_finish: function(data){
-    try {
-      const res = JSON.parse(data.responses);
 
-      jsPsych.data.addProperties({
-        gender: res.gender
-      });
-    } catch(e){
-      console.error(e);
-    }
+  const res = data.response;
+
+  if(res){
+
+    jsPsych.data.addProperties({
+      gender: res.gender
+    });
+
   }
+
+}
 });
 
 // --- EMPLOYMENT QUESTION ---
@@ -717,20 +722,21 @@ timeline.push({
 
   on_finish: function(data){
 
-    try {
+  const res = data.response;
 
-      const res = JSON.parse(data.responses);
+  if(res){
 
-      jsPsych.data.addProperties({
-        employment_status: res.employment_status,
-        industry: res.industry || ""
-      });
+    jsPsych.data.addProperties({
 
-    } catch(e){
-      console.error(e);
-    }
+      employment_status: res.employment_status,
+
+      industry: res.industry || ""
+
+    });
 
   }
+
+}
 });
 
 // --- GAMING QUESTION ---
@@ -756,19 +762,17 @@ timeline.push({
 
   on_finish: function(data){
 
-    try {
+  const res = data.response;
 
-      const res = JSON.parse(data.responses);
+  if(res){
 
-      jsPsych.data.addProperties({
-        gaming: res.gaming
-      });
-
-    } catch(e){
-      console.error(e);
-    }
+    jsPsych.data.addProperties({
+      gaming: res.gaming
+    });
 
   }
+
+}
 });
 
 // --- FINAL RESULTS SCREEN ---
