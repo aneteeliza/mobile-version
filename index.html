@@ -216,6 +216,7 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
             data.correct = 0;
             data.response = "";
           } else {
+            // FIXED: Evaluates based on dynamic input letter_set, not hardcoded value
             const chosenLetter = letter_set[data.button_pressed].toLowerCase();
             data.response = chosenLetter;
             data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
@@ -258,10 +259,9 @@ function saveData() {
     "rt"
   ];
 
-  // FIXED: Filter checks for both keyboard and button plugins
   const rows = jsPsych.data.get()
           .filterCustom(d => 
-            (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") &&
+            (d.block !== undefined) && 
             !d.ignore &&
             !d.practice
           )
@@ -362,30 +362,6 @@ function createPracticeBlock(blockName, nTrials){
     data: {
       ...t.data,
       practice: true
-    },
-    on_finish: function(data){
-      const correctAnswer =
-        (data.task === "global")
-          ? data.global_letter?.toLowerCase()
-          : data.local_letter?.toLowerCase();
-
-      if (IS_MOBILE) {
-        if (data.button_pressed === null || data.button_pressed === undefined || data.button_pressed === -1) {
-          data.correct = 0;
-          data.response = "";
-        } else {
-          const chosenLetter = LETTER_SETS.letters[data.button_pressed].toLowerCase();
-          data.response = chosenLetter;
-          data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
-        }
-      } else {
-        if (!data.response) {
-          data.correct = 0;
-          data.response = "";
-        } else {
-          data.correct = (data.response.toLowerCase() === correctAnswer) ? 1 : 0;
-        }
-      }
     }
   }));
 }
@@ -725,9 +701,9 @@ timeline.push({
 timeline.push({
   type: IS_MOBILE ? "html-button-response" : "html-keyboard-response",
   stimulus: function () {
-    // FIXED: Filter checks for both response types to generate end-screen scores accurately
+    // FIXED: Broaden query search rules to extract correctly processed properties cleanly
     const trials = jsPsych.data.get()
-      .filterCustom(d => (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") && !d.ignore && d.block && !d.practice);
+      .filterCustom(d => (d.block !== undefined) && !d.ignore && !d.practice);
 
     function blockAccuracy(blockName) {
       const blockTrials = trials.filter({ block: blockName });
