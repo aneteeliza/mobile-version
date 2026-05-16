@@ -182,21 +182,38 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         target_char: correctAnswer
       },
       on_finish: function(data){
-        const correctAnswer = data.target_char;
-        let chosenLetter = "";
 
-        if (IS_MOBILE) {
-          if (data.button_pressed !== null && data.button_pressed !== undefined) {
-            chosenLetter = formattedChoices[parseInt(data.button_pressed)];
-          }
-        } else {
-          chosenLetter = String(data.response || "").toLowerCase();
-        }
+  const correctAnswer = data.target_char;
+  let chosenLetter = "";
 
-        data.response = chosenLetter;
-        // Direct assignment ensures accurate values are written to data arrays
-        data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
-      }
+  if (IS_MOBILE) {
+
+    const idx = parseInt(data.button_pressed, 10);
+
+    if (!isNaN(idx)) {
+      chosenLetter = formattedChoices[idx];
+    }
+
+  } else {
+
+    chosenLetter = String(data.response || "").toLowerCase();
+
+  }
+
+  data.response = chosenLetter;
+
+  if (chosenLetter === "") {
+    data.correct = null;
+  } else {
+    data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
+  }
+
+  console.log({
+    response: chosenLetter,
+    expected: correctAnswer,
+    correct: data.correct
+  });
+}
     });
   }
 
