@@ -179,41 +179,38 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         task: task,
         global_letter: global_letter,
         local_letter: local_letter,
-        target_char: correctAnswer
+        target_char: correctAnswer,
+        choices_map: formattedChoices // Unified mapping payload
       },
       on_finish: function(data){
+        const correctAnswer = data.target_char;
+        let chosenLetter = "";
 
-  const correctAnswer = data.target_char;
-  let chosenLetter = "";
+        if (IS_MOBILE) {
+          // Button Response: data.button_pressed contains the numeric button index selected
+          const idx = data.button_pressed;
+          if (idx !== null && idx !== undefined && idx !== "") {
+            chosenLetter = data.choices_map ? [Number(idx)] : "";
+          }
+        } else {
+          // Keyboard Response: data.response contains the string representation of the character pressed
+          chosenLetter = String(data.response || "").toLowerCase();
+        }
 
-  if (IS_MOBILE) {
+        data.response = chosenLetter;
 
-    const idx = parseInt(data.button_pressed, 10);
+        if (chosenLetter === "") {
+          data.correct = null;
+        } else {
+          data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
+        }
 
-    if (!isNaN(idx)) {
-      chosenLetter = formattedChoices[idx];
-    }
-
-  } else {
-
-    chosenLetter = String(data.response || "").toLowerCase();
-
-  }
-
-  data.response = chosenLetter;
-
-  if (chosenLetter === "") {
-    data.correct = null;
-  } else {
-    data.correct = (chosenLetter === correctAnswer) ? 1 : 0;
-  }
-
-  console.log({
-    response: chosenLetter,
-    expected: correctAnswer,
-    correct: data.correct
-  });
-}
+        console.log({
+          response: chosenLetter,
+          expected: correctAnswer,
+          correct: data.correct
+        });
+      }
     });
   }
 
@@ -312,7 +309,6 @@ timeline.push({
 });
 timeline.push(...createPracticeBlock("mixed", 6));
 
-// FIX: Manually calculating performance percentages out of values array to prevent jsPsych filter loops
 function getAccuracyPercentage(blockName, isPracticeBlock) {
   const allTrials = jsPsych.data.get().values();
   let correctCount = 0;
@@ -322,9 +318,9 @@ function getAccuracyPercentage(blockName, isPracticeBlock) {
     const t = allTrials[i];
     const matchPractice = isPracticeBlock ? (t.practice === true) : (!t.practice && !t.ignore);
     
-    if (matchPractice && t.block === blockName && t.correct !== undefined) {
+    if (matchPractice && t.block === blockName && t.correct !== undefined && t.correct !== null) {
       totalCount++;
-      if (parseInt(t.correct) === 1) {
+      if (parseInt(t.correct, 10) === 1) {
         correctCount++;
       }
     }
@@ -441,7 +437,7 @@ timeline.push({
   html: `<div class="card"><p>Tavs vecums:</p><input name="age" type="number" min="1" max="99" required /></div>`,
   button_label: "Turpināt",
   on_finish: function(data){
-    const age = parseInt(data.response.age);
+    const age = parseInt(data.response.age, 10);
     if (!isNaN(age)) jsPsych.data.addProperties({ age: age });
   }
 });
