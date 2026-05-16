@@ -229,16 +229,12 @@ function generateNavonHTML(global_letter, local_letter){
       });
     }
 // =========================
-// MOBILE VERSION
+// MOBILE VERSION (FIXED)
 // =========================
 if (DEVICE === "mobile" || DEVICE === "tablet") {
 
   trials.push({
     type: "html-button-response",
-
-    on_start: function () {
-      removeMobileButtons();
-    },
 
     stimulus: `
       <div style="font-size:32px; margin-bottom:20px;">
@@ -279,17 +275,16 @@ if (DEVICE === "mobile" || DEVICE === "tablet") {
 
       let resp = "";
 
-      // 🔥 drošs response handling (JSPsych mobile bieži dod string vai index)
       if (typeof data.response === "number") {
         resp = set[data.response];
       } else if (typeof data.response === "string") {
         resp = data.response;
       }
 
-      resp = resp || "";
+      if (!resp) resp = "";
 
       data.response = resp;
-      data.correct = resp === correctAnswer ? 1 : 0;
+      data.correct = (resp === correctAnswer) ? 1 : 0;
     }
   });
 
