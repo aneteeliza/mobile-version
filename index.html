@@ -178,33 +178,33 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
         task: task,
         global_letter: global_letter,
         local_letter: local_letter,
-        target_char: correctAnswer
+        target_char: correctAnswer,
+        choices_array: formattedChoices
       },
       on_finish: function(data){
-        const target = String(data.target_char || "").toLowerCase();
-        let chosenLetter = "";
+  const target = String(data.target_char || "").toLowerCase();
+  let chosenLetter = "";
 
-        if (IS_MOBILE) {
-          const idx = data.button_pressed;
-          if (idx !== null && idx !== undefined && idx !== "") {
-            // Instantly look up configuration inside active runtime trial choices array
-            const trialDetails = jsPsych.currentTrial();
-            if (trialDetails && trialDetails.choices) {
-              chosenLetter = String(trialDetails.choices[Number(idx)] || "").toLowerCase();
-            }
-          }
-        } else {
-          chosenLetter = String(data.response || "").toLowerCase();
-        }
+  if (IS_MOBILE) {
+    const idx = data.button_pressed;
 
-        data.response = chosenLetter;
-        
-        if (chosenLetter === "") {
-          data.correct = 0; 
-        } else {
-          data.correct = (chosenLetter === target) ? 1 : 0;
-        }
-      }
+    if (idx !== null && idx !== undefined && idx !== "") {
+      chosenLetter = String(
+        data.choices_array[Number(idx)] || ""
+      ).toLowerCase();
+    }
+  } else {
+    chosenLetter = String(data.response || "").toLowerCase();
+  }
+
+  data.response = chosenLetter;
+
+  if (chosenLetter === "") {
+    data.correct = 0;
+  } else {
+    data.correct = (chosenLetter === target) ? 1 : 0;
+  }
+}
     });
   }
 
