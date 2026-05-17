@@ -182,7 +182,29 @@ function generateNavonHTML(global_letter, local_letter){
   return html;
 }
 
-function instructionScreen(htmlText){ let fixedText = IS_MOBILE ? htmlText.replace(/Nospied SPACE, lai turpinātu/g, "Nospied pogu zemāk, lai turpinātu").replace(/Nospied SPACE, lai sāktu/g, "Nospied pogu zemāk, lai sāktu") : htmlText; return IS_MOBILE ? { type: "html-button-response", stimulus: fixedText, choices: ["TURPINĀT"], button_html: <button class="jspsych-btn mobile-btn" style="margin-top:20px;">%choice%</button>, data: {ignore:true} } : { type: "html-keyboard-response", stimulus: fixedText, choices: [" "], data: {ignore:true} }; }
+function instructionScreen(htmlText){
+
+  let fixedText = IS_MOBILE 
+    ? htmlText
+        .replace(/Nospied SPACE, lai turpinātu/g, "Nospied pogu zemāk, lai turpinātu")
+        .replace(/Nospied SPACE, lai sāktu/g, "Nospied pogu zemāk, lai sāktu")
+    : htmlText;
+
+  return IS_MOBILE
+    ? {
+        type: "html-button-response",
+        stimulus: fixedText,
+        choices: ["TURPINĀT"],
+        button_html: `<button class="jspsych-btn mobile-btn" style="margin-top:20px;">%choice%</button>`,
+        data: { ignore: true }
+      }
+    : {
+        type: "html-keyboard-response",
+        stimulus: fixedText,
+        choices: [" "],
+        data: { ignore: true }
+      };
+}
 
 function createTrials(block_type, n_trials, fixed_task=null, letter_set){
   const trials = [];
