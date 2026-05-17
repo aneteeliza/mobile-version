@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Navon Task - jsPsych</title>
+  <title>Neivona Tests</title>
   <link href="https://unpkg.com/jspsych@6.3.1/css/jspsych.css" rel="stylesheet" type="text/css">
   <style>
     body {
@@ -21,10 +21,35 @@
       margin-top: 15px;
       font-size: 0.9em;
     }
-    .navon-container { display: inline-block; margin: 20px auto; line-height: 1.1; } 
-    .navon-letter { font-size: 20px; font-family: monospace; font-weight: bold; display: inline-block; width: 20px; height: 20px; text-align: center; opacity: 0; animation: fadein 0.2s forwards; } 
-    @media (max-width: 600px) { 
-      .navon-letter { font-size: 16px; width: 16px; height: 16px; } }
+    .navon-container {
+  display: inline-block;
+  margin: 20px auto;
+  line-height: 1;
+  transform: scale(1.1);
+}
+    
+    .navon-letter {
+  font-family: monospace;
+  font-weight: bold;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  width: 28px;
+  height: 28px;
+  font-size: 26px;
+
+  text-align: center;
+  opacity: 0;
+  animation: fadein 0.2s forwards;
+}
+    @media (max-width: 600px) {
+  .navon-letter {
+    width: 20px;
+    height: 20px;
+    font-size: 18px;
+  }
+}
     
     @keyframes fadein {
       from { opacity: 0; transform: scale(0.5); }
@@ -157,45 +182,7 @@ function generateNavonHTML(global_letter, local_letter){
   return html;
 }
 
-function instructionScreen(htmlText){
-
-  let fixedText = IS_MOBILE 
-    ? htmlText
-        .replace(/Nospied SPACE, lai turpinātu/g, "Nospied pogu zemāk, lai turpinātu")
-        .replace(/Nospied SPACE, lai sāktu/g, "Nospied pogu zemāk, lai sāktu")
-    : htmlText;
-
-  return IS_MOBILE
-    ? {
-        type: "html-button-response",
-        stimulus: `
-          <div class="card">
-            ${fixedText}
-            <div style="margin-top:20px;">
-              <button class="jspsych-btn mobile-btn jspsych-custom-btn">
-                TURPINĀT
-              </button>
-            </div>
-          </div>
-        `,
-        choices: ["TURPINĀT"],
-
-        on_load: function() {
-          document.querySelector(".jspsych-custom-btn")
-            .addEventListener("click", function () {
-              jsPsych.finishTrial();
-            });
-        },
-
-        data: { ignore: true }
-      }
-    : {
-        type: "html-keyboard-response",
-        stimulus: fixedText,
-        choices: [" "],
-        data: { ignore: true }
-      };
-}
+function instructionScreen(htmlText){ let fixedText = IS_MOBILE ? htmlText.replace(/Nospied SPACE, lai turpinātu/g, "Nospied pogu zemāk, lai turpinātu").replace(/Nospied SPACE, lai sāktu/g, "Nospied pogu zemāk, lai sāktu") : htmlText; return IS_MOBILE ? { type: "html-button-response", stimulus: fixedText, choices: ["TURPINĀT"], button_html: <button class="jspsych-btn mobile-btn" style="margin-top:20px;">%choice%</button>, data: {ignore:true} } : { type: "html-keyboard-response", stimulus: fixedText, choices: [" "], data: {ignore:true} }; }
 
 function createTrials(block_type, n_trials, fixed_task=null, letter_set){
   const trials = [];
