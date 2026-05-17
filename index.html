@@ -588,8 +588,10 @@ timeline.push(
 // --- AGE QUESTION ---
 timeline.push({
   type: "survey-html-form",
+
   html: `
     <div class="card">
+
       <p>Tavs vecums:</p>
 
       <input
@@ -608,33 +610,45 @@ timeline.push({
           text-align:center;
         "
       />
+
     </div>
   `,
+
   button_label: "Turpināt",
+
   on_finish: function(data){
 
-  const res = data.response;
+    if(data.responses){
 
-  if(res && res.age){
+      const res = JSON.parse(data.responses);
 
-    const age = parseInt(res.age);
+      if(res.age){
 
-    if(!isNaN(age)){
-      jsPsych.data.addProperties({
-        age: age
-      });
+        const age = parseInt(res.age);
+
+        if(!isNaN(age)){
+
+          jsPsych.data.addProperties({
+            age: age
+          });
+
+        }
+
+      }
+
     }
 
   }
-
-}
 });
+
 
 // --- GENDER QUESTION ---
 timeline.push({
   type: "survey-html-form",
+
   html: `
     <div class="card">
+
       <p>Tavs dzimums:</p>
 
       <select name="gender" required>
@@ -644,33 +658,39 @@ timeline.push({
         <option value="other">Cits</option>
         <option value="na">Nevēlos norādīt</option>
       </select>
+
     </div>
   `,
+
   button_label: "Turpināt",
+
   on_finish: function(data){
 
-  const res = data.response;
+    if(data.responses){
 
-  if(res){
+      const res = JSON.parse(data.responses);
 
-    jsPsych.data.addProperties({
-      gender: res.gender
-    });
+      jsPsych.data.addProperties({
+        gender: res.gender
+      });
+
+    }
 
   }
-
-}
 });
+
 
 // --- EMPLOYMENT QUESTION ---
 timeline.push({
   type: "survey-html-form",
+
   html: `
     <div class="card">
 
       <p>Kāds ir Tavs pašreizējais nodarbošanās statuss?</p>
 
       <select name="employment_status" id="employment_status" required>
+
         <option value="">Izvēlies</option>
         <option value="employed">Strādā algotu darbu</option>
         <option value="self">Pašnodarbināts / uzņēmējs</option>
@@ -679,6 +699,7 @@ timeline.push({
         <option value="parental">Bērna kopšanas atvaļinājumā</option>
         <option value="retired">Pensionārs</option>
         <option value="other">Cits</option>
+
       </select>
 
       <div id="industry_block" style="display:none; margin-top:15px;">
@@ -686,30 +707,33 @@ timeline.push({
         <p>Kādā nozarē Tu darbojies?</p>
 
         <select name="industry">
+
           <option value="">Izvēlies</option>
           <option value="it">IT</option>
           <option value="education">Izglītība</option>
           <option value="services">Pakalpojumi</option>
           <option value="healthcare">Veselības aprūpe</option>
           <option value="other">Cits</option>
+
         </select>
 
       </div>
 
     </div>
   `,
+
   button_label: "Turpināt",
 
-  on_load: function () {
+  on_load: function(){
 
     const select = document.getElementById("employment_status");
     const industryBlock = document.getElementById("industry_block");
 
-    if (select && industryBlock) {
+    if(select && industryBlock){
 
-      select.addEventListener("change", function () {
+      select.addEventListener("change", function(){
 
-        if (this.value === "employed" || this.value === "self") {
+        if(this.value === "employed" || this.value === "self"){
           industryBlock.style.display = "block";
         } else {
           industryBlock.style.display = "none";
@@ -718,61 +742,26 @@ timeline.push({
       });
 
     }
+
   },
 
   on_finish: function(data){
 
-  const res = data.response;
+    if(data.responses){
 
-  if(res){
+      const res = JSON.parse(data.responses);
 
-    jsPsych.data.addProperties({
+      jsPsych.data.addProperties({
 
-      employment_status: res.employment_status,
+        employment_status: res.employment_status,
 
-      industry: res.industry || ""
+        industry: res.industry || ""
 
-    });
+      });
 
-  }
-
-}
-});
-
-// --- GAMING QUESTION ---
-timeline.push({
-  type: "survey-html-form",
-  html: `
-    <div class="card">
-
-      <p>Cik bieži Tu spēlē videospēles?</p>
-
-      <select name="gaming" required>
-        <option value="">Izvēlies</option>
-        <option value="never">Nekad</option>
-        <option value="rare">Ļoti reti</option>
-        <option value="sometimes">Reizēm</option>
-        <option value="often">Bieži</option>
-        <option value="very_often">Ļoti bieži</option>
-      </select>
-
-    </div>
-  `,
-  button_label: "Pabeigt",
-
-  on_finish: function(data){
-
-  const res = data.response;
-
-  if(res){
-
-    jsPsych.data.addProperties({
-      gaming: res.gaming
-    });
+    }
 
   }
-
-}
 });
 
 // --- FINAL RESULTS SCREEN ---
