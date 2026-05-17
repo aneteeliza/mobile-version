@@ -281,35 +281,58 @@ function createTrials(block_type, n_trials, fixed_task=null, letter_set){
 }
 
 function saveData() {
+
   const columns = [
-    "participant_id", "timestamp", "device", "age", "gender", 
-    "employment_status", "industry", "position", "occupation", "gaming",
-    "block", "trial", "condition", "task", "global_letter", "local_letter", 
-    "response", "correct", "rt"
+    "participant_id",
+    "timestamp",
+    "device",
+    "age",
+    "gender",
+    "employment_status",
+    "industry",
+    "gaming",
+    "block",
+    "trial",
+    "condition",
+    "task",
+    "global_letter",
+    "local_letter",
+    "response",
+    "correct",
+    "rt"
   ];
-  
+
   const rows = jsPsych.data.get()
-          .filterCustom(d => 
-            (d.trial_type === "html-keyboard-response" || d.trial_type === "html-button-response") &&
-            !d.ignore &&
-            !d.practice
-          )
-          .values()
-          .map(r => {
-            let obj = {};
-            columns.forEach(c => obj[c] = r[c] ?? "");
-            return obj;
-          });
-          
+    .filterCustom(d => !d.ignore)
+    .values()
+    .map(r => {
+
+      let obj = {};
+
+      columns.forEach(c => {
+        obj[c] = r[c] ?? "";
+      });
+
+      return obj;
+
+    });
+
+  console.log(rows);
+
   fetch(GOOGLE_SHEETS_URL, {
     method: "POST",
-    headers: { "Content-Type": "text/plain" },
+    headers: {
+      "Content-Type": "text/plain"
+    },
     body: JSON.stringify(rows)
-  }).then(() => {
+  })
+  .then(() => {
     console.log("Data sent to sheet");
-  }).catch(error => {
+  })
+  .catch(error => {
     console.error("Error sending data:", error);
   });
+
 }
 
 let timeline = [];
@@ -628,9 +651,7 @@ timeline.push({
 
         if(!isNaN(age)){
 
-          jsPsych.data.addProperties({
-            age: age
-          });
+          data.age = age;
 
         }
 
@@ -670,9 +691,7 @@ timeline.push({
 
       const res = JSON.parse(data.responses);
 
-      jsPsych.data.addProperties({
-        gender: res.gender
-      });
+      data.gender = res.gender;
 
     }
 
@@ -751,13 +770,8 @@ timeline.push({
 
       const res = JSON.parse(data.responses);
 
-      jsPsych.data.addProperties({
-
-        employment_status: res.employment_status,
-
-        industry: res.industry || ""
-
-      });
+      data.employment_status = res.employment_status;
+      data.industry = res.industry || "";
 
     }
 
