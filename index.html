@@ -166,30 +166,35 @@ function instructionScreen(htmlText){
     : htmlText;
 
   return IS_MOBILE
-  ? {
-      type: "html-button-response",
-      stimulus: `
-        <div class="card">
-          ${fixedText}
-          <div style="margin-top:20px;">
-            <button class="jspsych-btn mobile-btn jspsych-custom-btn">
-              TURPINĀT
-            </button>
+    ? {
+        type: "html-button-response",
+        stimulus: `
+          <div class="card">
+            ${fixedText}
+            <div style="margin-top:20px;">
+              <button class="jspsych-btn mobile-btn jspsych-custom-btn">
+                TURPINĀT
+              </button>
+            </div>
           </div>
-        </div>
-      `,
-      choices: ["TURPINĀT"],
-      button_html: "",
+        `,
+        choices: ["TURPINĀT"],
 
-      on_load: function() {
-        document.querySelector(".jspsych-custom-btn")
-          .addEventListener("click", function () {
-            jsPsych.finishTrial({ response: "TURPINĀT" });
-          });
-      },
+        on_load: function() {
+          document.querySelector(".jspsych-custom-btn")
+            .addEventListener("click", function () {
+              jsPsych.finishTrial();
+            });
+        },
 
-      data: { ignore: true }
-    }
+        data: { ignore: true }
+      }
+    : {
+        type: "html-keyboard-response",
+        stimulus: fixedText,
+        choices: [" "],
+        data: { ignore: true }
+      };
 }
 
 function createTrials(block_type, n_trials, fixed_task=null, letter_set){
