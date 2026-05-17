@@ -641,25 +641,29 @@ timeline.push({
 
   on_finish: function(data){
 
-    if(data.responses){
+  const res = data.response || data.responses;
 
-      const res = JSON.parse(data.responses);
-
-      if(res.age){
-
-        const age = parseInt(res.age);
-
-        if(!isNaN(age)){
-
-          data.age = age;
-
-        }
-
-      }
-
+  if(typeof res === "string"){
+    try {
+      parsed = JSON.parse(res);
+    } catch(e){
+      parsed = {};
     }
+  } else {
+    parsed = res || {};
+  }
+
+  const age = parseInt(parsed.age);
+
+  if(!isNaN(age)){
+
+    jsPsych.data.addProperties({
+      age: age
+    });
 
   }
+
+}
 });
 
 
@@ -687,15 +691,25 @@ timeline.push({
 
   on_finish: function(data){
 
-    if(data.responses){
+  const res = data.response || data.responses;
 
-      const res = JSON.parse(data.responses);
+  let parsed;
 
-      data.gender = res.gender;
-
+  if(typeof res === "string"){
+    try {
+      parsed = JSON.parse(res);
+    } catch(e){
+      parsed = {};
     }
-
+  } else {
+    parsed = res || {};
   }
+
+  jsPsych.data.addProperties({
+    gender: parsed.gender || ""
+  });
+
+}
 });
 
 
@@ -766,14 +780,72 @@ timeline.push({
 
   on_finish: function(data){
 
-    if(data.responses){
+  const res = data.response || data.responses;
 
-      const res = JSON.parse(data.responses);
+  let parsed;
 
-      data.employment_status = res.employment_status;
-      data.industry = res.industry || "";
-
+  if(typeof res === "string"){
+    try {
+      parsed = JSON.parse(res);
+    } catch(e){
+      parsed = {};
     }
+  } else {
+    parsed = res || {};
+  }
+
+  jsPsych.data.addProperties({
+
+    employment_status: parsed.employment_status || "",
+
+    industry: parsed.industry || ""
+
+  });
+
+}
+});
+
+  timeline.push({
+  type: "survey-html-form",
+
+  html: `
+    <div class="card">
+
+      <p>Cik bieži Tu spēlē videospēles?</p>
+
+      <select name="gaming" required>
+        <option value="">Izvēlies</option>
+        <option value="never">Nekad</option>
+        <option value="rare">Ļoti reti</option>
+        <option value="sometimes">Reizēm</option>
+        <option value="often">Bieži</option>
+        <option value="very_often">Ļoti bieži</option>
+      </select>
+
+    </div>
+  `,
+
+  button_label: "Pabeigt",
+
+  on_finish: function(data){
+
+    const res = data.response || data.responses;
+
+    let parsed;
+
+    if(typeof res === "string"){
+      try {
+        parsed = JSON.parse(res);
+      } catch(e){
+        parsed = {};
+      }
+    } else {
+      parsed = res || {};
+    }
+
+    jsPsych.data.addProperties({
+      gaming: parsed.gaming || ""
+    });
 
   }
 });
