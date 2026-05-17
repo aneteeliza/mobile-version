@@ -303,7 +303,13 @@ function saveData() {
   ];
 
   const rows = jsPsych.data.get()
-    .filterCustom(d => !d.ignore)
+  .filterCustom(d =>
+
+    !d.ignore &&
+
+    d.trial_type !== "survey-html-form"
+
+  )
     .values()
     .map(r => {
 
